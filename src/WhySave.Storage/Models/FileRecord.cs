@@ -11,8 +11,11 @@ public class FileRecord
     public long? NtfsFileId { get; set; }
     public string? Sha256 { get; set; }
     public string Status { get; set; } = "";
+    public string? PriorStatus { get; set; }
     public byte[]? ReasonCipher { get; set; }
     public byte[]? NotesCipher { get; set; }
+    public string? Reason { get; set; }
+    public string? Notes { get; set; }
     public string? Project { get; set; }
     public string? Url { get; set; }
     public string? Referrer { get; set; }

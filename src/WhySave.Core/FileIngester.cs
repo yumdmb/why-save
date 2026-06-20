@@ -63,7 +63,10 @@ public sealed class FileIngester : IFileIngester
             existing.TabTitle = request.TabTitle;
 
         if (existing.Status == "missing")
-            existing.Status = "pending";
+        {
+            existing.Status = existing.PriorStatus ?? "pending";
+            existing.PriorStatus = null;
+        }
 
         _filesRepo.Update(existing);
         return new IngestResult(existing.Id, IsNew: false, existing.Status);
