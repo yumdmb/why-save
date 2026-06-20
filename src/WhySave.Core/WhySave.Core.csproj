@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\WhySave.Storage\WhySave.Storage.csproj" />
+    <ProjectReference Include="..\WhySave.Crypto\WhySave.Crypto.csproj" />
+    <ProjectReference Include="..\WhySave.Native\WhySave.Native.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

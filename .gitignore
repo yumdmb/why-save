@@ -1,0 +1,109 @@
+# Build outputs
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Dd]ebug/
+[Rr]elease/
+[Pp]ublish/
+[Pp]ublished/
+[Bb]uildartifacts/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Visual Studio / VS Code / Rider user-specific
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.swp
+*~
+
+# Build results and logs
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.log
+*.binlog
+*.tlog
+*.pidb
+*.svclog
+*.stash
+
+# Test / coverage
+[Tt]est[Rr]esult/
+[Bb]uild[Rr]esult/
+coverage/
+coverage*.json
+coverage*.xml
+coverage*.info
+*.coverage
+*.coveragexml
+TestResults/
+*.trx
+*.coverage.*
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# DotCover
+*.dotCover
+
+# Visual Studio code coverage results
+*.coverage
+*.coveragexml
+
+# Publish profiles
+*.pubxml
+*.pubxml.user
+PublishProfiles/
+
+# Windows / OS clutter
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# App runtime data (never in repo, but guard against accidental local copies)
+whysave.db
+whysave.db-shm
+whysave.db-wal
+key.bin
+settings.json
+
+# Secrets / environment
+.env
+.env.*
+*.pfx
+*.p12
+*.cer
+*.crt
+
+# Backup / temp
+*.bak
+*.tmp
+*.part
+*.crdownload
+*.download
+*.partial
+
+# AI Agents Files
+.agents/
+.opencode/
+openspec/
+skills-lock.json
+
