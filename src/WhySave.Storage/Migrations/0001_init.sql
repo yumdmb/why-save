@@ -15,6 +15,8 @@ CREATE TABLE files (
     notes_cipher        BLOB,
     project             TEXT,
     url                 TEXT,
+    referrer            TEXT,
+    tab_title           TEXT,
     parent_file_id      TEXT     REFERENCES files(id),
     first_seen_at       INTEGER  NOT NULL,
     saved_at            INTEGER,

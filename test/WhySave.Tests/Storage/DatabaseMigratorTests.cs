@@ -1,3 +1,4 @@
+using System.IO;
 using Dapper;
 using Microsoft.Data.Sqlite;
 using WhySave.Storage;
@@ -54,12 +55,12 @@ public class DatabaseMigratorTests : StorageTestBase
         Connection.Execute("UPDATE files SET project = 'ML-course' WHERE id = 't2'");
 
         var match = Connection.QueryFirstOrDefault<string>(
-            "SELECT filename FROM files_fts WHERE files_fts MATCH 'ML-course'");
+            "SELECT filename FROM files_fts WHERE files_fts MATCH '\"ML-course\"'");
         Assert.Equal("AI_Paper.pdf", match);
 
         Connection.Execute("UPDATE files SET project = 'data-science' WHERE id = 't2'");
         var oldMatch = Connection.QueryFirstOrDefault<string>(
-            "SELECT filename FROM files_fts WHERE files_fts MATCH 'ML-course'");
+            "SELECT filename FROM files_fts WHERE files_fts MATCH '\"ML-course\"'");
         Assert.Null(oldMatch);
     }
 

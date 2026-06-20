@@ -15,6 +15,8 @@ public class FileRecord
     public byte[]? NotesCipher { get; set; }
     public string? Project { get; set; }
     public string? Url { get; set; }
+    public string? Referrer { get; set; }
+    public string? TabTitle { get; set; }
     public string? ParentFileId { get; set; }
     public long FirstSeenAt { get; set; }
     public long? SavedAt { get; set; }

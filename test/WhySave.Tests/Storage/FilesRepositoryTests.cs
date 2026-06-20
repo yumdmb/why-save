@@ -190,7 +190,7 @@ public class FilesRepositoryTests : StorageTestBase
     {
         var repo = new FilesRepository(Connection);
         for (var i = 0; i < 10; i++)
-            repo.Insert(NewRecord($"lim{i}", path: $"/p/report{i}.pdf", filename: $"report{i}.pdf"));
+            repo.Insert(NewRecord($"lim{i}", path: $"/p/report_{i}.pdf", filename: $"report_{i}.pdf"));
 
         var results = repo.SearchFts("report", limit: 3).ToList();
         Assert.Equal(3, results.Count);

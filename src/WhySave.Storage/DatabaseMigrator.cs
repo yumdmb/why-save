@@ -38,16 +38,13 @@ public partial class DatabaseMigrator
 
     private void ApplyMigration(Migration migration)
     {
-        var statements = SplitStatements(migration.Sql);
-
-        foreach (var stmt in statements.Where(IsPragma))
-            _connection.Execute(stmt);
+        var ddl = StripPragmaLines(migration.Sql);
 
         using var tx = _connection.BeginTransaction();
         try
         {
-            foreach (var stmt in statements.Where(s => !IsPragma(s)))
-                _connection.Execute(stmt, transaction: tx);
+            if (!string.IsNullOrWhiteSpace(ddl))
+                _connection.Execute(ddl, transaction: tx);
 
             _connection.Execute($"PRAGMA user_version = {migration.Number};", transaction: tx);
             tx.Commit();
@@ -59,10 +56,17 @@ public partial class DatabaseMigrator
         }
     }
 
-    private static bool IsPragma(string statement)
+    private static string StripPragmaLines(string sql)
     {
-        var trimmed = statement.TrimStart();
-        return trimmed.StartsWith("PRAGMA", StringComparison.OrdinalIgnoreCase);
+        var lines = sql.Split('\n');
+        var sb = new StringBuilder();
+        foreach (var line in lines)
+        {
+            if (line.TrimStart().StartsWith("PRAGMA", StringComparison.OrdinalIgnoreCase))
+                continue;
+            sb.AppendLine(line);
+        }
+        return sb.ToString().Trim();
     }
 
     protected virtual IReadOnlyList<Migration> LoadMigrations()
@@ -94,59 +98,6 @@ public partial class DatabaseMigrator
     {
         var match = MigrationNumberRegex().Match(resourceName);
         return match.Success ? int.Parse(match.Groups[1].Value) : null;
-    }
-
-    private static List<string> SplitStatements(string sql)
-    {
-        var statements = new List<string>();
-        var sb = new StringBuilder();
-        var inSingle = false;
-        var inDouble = false;
-
-        for (var i = 0; i < sql.Length; i++)
-        {
-            var c = sql[i];
-            sb.Append(c);
-
-            if (inSingle)
-            {
-                if (c == '\'')
-                {
-                    if (i + 1 < sql.Length && sql[i + 1] == '\'')
-                        sb.Append(sql[++i]);
-                    else
-                        inSingle = false;
-                }
-            }
-            else if (inDouble)
-            {
-                if (c == '"')
-                {
-                    if (i + 1 < sql.Length && sql[i + 1] == '"')
-                        sb.Append(sql[++i]);
-                    else
-                        inDouble = false;
-                }
-            }
-            else
-            {
-                if (c == '\'') inSingle = true;
-                else if (c == '"') inDouble = true;
-                else if (c == ';')
-                {
-                    var stmt = sb.ToString().Trim();
-                    if (!string.IsNullOrEmpty(stmt) && !stmt.StartsWith("--", StringComparison.Ordinal))
-                        statements.Add(stmt);
-                    sb.Clear();
-                }
-            }
-        }
-
-        var last = sb.ToString().Trim();
-        if (!string.IsNullOrEmpty(last) && !last.StartsWith("--", StringComparison.Ordinal))
-            statements.Add(last);
-
-        return statements;
     }
 
     [GeneratedRegex(@"\.(\d+)_", RegexOptions.Compiled)]

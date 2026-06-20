@@ -8,6 +8,11 @@ public class FilesRepository
 {
     private readonly SqliteConnection _connection;
 
+    static FilesRepository()
+    {
+        Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+    }
+
     public FilesRepository(SqliteConnection connection)
     {
         _connection = connection;
@@ -19,13 +24,13 @@ public class FilesRepository
             """
             INSERT INTO files (
                 id, path, filename, ext, size_bytes, volume_serial, ntfs_file_id,
-                sha256, status, reason_cipher, notes_cipher, project, url,
-                parent_file_id, first_seen_at, saved_at, last_prompted_at,
+                sha256, status, reason_cipher, notes_cipher, project, url, referrer,
+                tab_title, parent_file_id, first_seen_at, saved_at, last_prompted_at,
                 last_resolved_at, last_opened_via_app_at, created_at, updated_at
             ) VALUES (
                 @Id, @Path, @Filename, @Ext, @SizeBytes, @VolumeSerial, @NtfsFileId,
-                @Sha256, @Status, @ReasonCipher, @NotesCipher, @Project, @Url,
-                @ParentFileId, @FirstSeenAt, @SavedAt, @LastPromptedAt,
+                @Sha256, @Status, @ReasonCipher, @NotesCipher, @Project, @Url, @Referrer,
+                @TabTitle, @ParentFileId, @FirstSeenAt, @SavedAt, @LastPromptedAt,
                 @LastResolvedAt, @LastOpenedViaAppAt, @CreatedAt, @UpdatedAt
             )
             """,
@@ -40,9 +45,10 @@ public class FilesRepository
                 path = @Path, filename = @Filename, ext = @Ext, size_bytes = @SizeBytes,
                 volume_serial = @VolumeSerial, ntfs_file_id = @NtfsFileId, sha256 = @Sha256,
                 status = @Status, reason_cipher = @ReasonCipher, notes_cipher = @NotesCipher,
-                project = @Project, url = @Url, parent_file_id = @ParentFileId,
-                first_seen_at = @FirstSeenAt, saved_at = @SavedAt,
-                last_prompted_at = @LastPromptedAt, last_resolved_at = @LastResolvedAt,
+                project = @Project, url = @Url, referrer = @Referrer, tab_title = @TabTitle,
+                parent_file_id = @ParentFileId, first_seen_at = @FirstSeenAt,
+                saved_at = @SavedAt, last_prompted_at = @LastPromptedAt,
+                last_resolved_at = @LastResolvedAt,
                 last_opened_via_app_at = @LastOpenedViaAppAt, updated_at = @UpdatedAt
             WHERE id = @Id
             """,
@@ -71,15 +77,18 @@ public class FilesRepository
             "SELECT * FROM files WHERE status = @status ORDER BY first_seen_at DESC",
             new { status });
 
-    public IEnumerable<FileRecord> SearchFts(string query, int limit = 200) =>
-        _connection.Query<FileRecord>(
+    public IEnumerable<FileRecord> SearchFts(string query, int limit = 200)
+    {
+        var ftsQuery = "\"" + query.Replace("\"", "\"\"") + "\"";
+        return _connection.Query<FileRecord>(
             """
-            SELECT f.*, files_fts.rank
+            SELECT f.*
             FROM files_fts
             JOIN files f ON f.rowid = files_fts.rowid
             WHERE files_fts MATCH @query
             ORDER BY files_fts.rank
             LIMIT @limit
             """,
-            new { query, limit });
+            new { query = ftsQuery, limit });
+    }
 }

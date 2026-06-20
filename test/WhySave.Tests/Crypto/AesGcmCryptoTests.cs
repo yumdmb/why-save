@@ -55,7 +55,7 @@ public class AesGcmCryptoTests
 
         blob[^AesGcmCrypto.TagSize] ^= 0xFF;
 
-        Assert.Throws<CryptographicException>(() => AesGcmCrypto.Decrypt(blob, key));
+        Assert.ThrowsAny<CryptographicException>(() => AesGcmCrypto.Decrypt(blob, key));
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class AesGcmCryptoTests
 
         blob[0] ^= 0xFF;
 
-        Assert.Throws<CryptographicException>(() => AesGcmCrypto.Decrypt(blob, key));
+        Assert.ThrowsAny<CryptographicException>(() => AesGcmCrypto.Decrypt(blob, key));
     }
 
     [Fact]
@@ -78,14 +78,14 @@ public class AesGcmCryptoTests
         var plain = "secret"u8.ToArray();
         var blob = AesGcmCrypto.Encrypt(plain, key1);
 
-        Assert.Throws<CryptographicException>(() => AesGcmCrypto.Decrypt(blob, key2));
+        Assert.ThrowsAny<CryptographicException>(() => AesGcmCrypto.Decrypt(blob, key2));
     }
 
     [Fact]
     public void Blob_Too_Short_Throws()
     {
         var key = NewKey();
-        Assert.Throws<CryptographicException>(() => AesGcmCrypto.Decrypt(new byte[10], key));
+        Assert.ThrowsAny<CryptographicException>(() => AesGcmCrypto.Decrypt(new byte[10], key));
     }
 
     [Theory]

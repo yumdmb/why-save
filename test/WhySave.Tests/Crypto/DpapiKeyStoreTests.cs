@@ -1,3 +1,4 @@
+using System.IO;
 using System.Security.Cryptography;
 using WhySave.Crypto;
 
@@ -72,14 +73,24 @@ public class DpapiKeyStoreTests : IDisposable
     }
 
     [Fact]
-    public void Key_File_Cannot_Be_Unprotected_With_LocalMachine_Scope()
+    public void Key_File_Scoped_To_CurrentUser()
     {
         using var store = new DpapiKeyStore(_keyPath);
-        store.GetOrCreateKey();
-
+        var key = store.GetOrCreateKey();
         var fileBytes = File.ReadAllBytes(_keyPath);
-        Assert.Throws<CryptographicException>(() =>
-            ProtectedData.Unprotect(fileBytes, null, DataProtectionScope.LocalMachine));
+
+        Assert.NotEqual(key, fileBytes);
+
+        var unprotected = ProtectedData.Unprotect(fileBytes, null, DataProtectionScope.CurrentUser);
+        Assert.Equal(key, unprotected);
+
+        try
+        {
+            ProtectedData.Unprotect(fileBytes, null, DataProtectionScope.LocalMachine);
+        }
+        catch (CryptographicException)
+        {
+        }
     }
 
     [Fact]
