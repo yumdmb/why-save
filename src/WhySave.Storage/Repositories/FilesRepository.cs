@@ -99,6 +99,10 @@ public class FilesRepository
             "SELECT * FROM files WHERE status = @status ORDER BY first_seen_at DESC",
             new { status }));
 
+    public IEnumerable<FileRecord> ListAll() =>
+        DecryptFields(_connection.Query<FileRecord>(
+            "SELECT * FROM files ORDER BY first_seen_at DESC"));
+
     public IEnumerable<FileRecord> SearchFts(string query, int limit = 200)
     {
         var ftsQuery = "\"" + query.Replace("\"", "\"\"") + "\"";
