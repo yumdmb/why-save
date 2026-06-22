@@ -33,6 +33,40 @@
                 </Grid>
             </Border>
         </DataTemplate>
+        <DataTemplate x:Key="SearchResultTemplate" DataType="{x:Type vm:FileRowViewModel}">
+            <Border Padding="8,6" BorderThickness="0,0,0,1" BorderBrush="#FFE0E0E0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{Binding Filename}" FontWeight="SemiBold" FontSize="14"/>
+                        <TextBlock Text="{Binding ReasonSnippet}" Foreground="DimGray" FontSize="12"
+                                   TextTrimming="CharacterEllipsis" MaxWidth="480"
+                                   Visibility="{Binding ReasonSnippet, Converter={StaticResource NullToVisibilityConverter}}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding SavedAtDisplay}" Foreground="Gray" FontSize="11" Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding Project}" Foreground="DimGray" FontSize="11"
+                                       Visibility="{Binding Project, Converter={StaticResource NullToVisibilityConverter}}"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <Border Grid.Column="1" Padding="6,2" Margin="8,0" CornerRadius="4"
+                            Background="{Binding Status, Converter={StaticResource StatusToBrushConverter}}">
+                        <TextBlock Text="{Binding StatusBadge}" FontSize="11" Foreground="White"/>
+                    </Border>
+                    <Button Grid.Column="2" Content="Open"
+                            Command="{Binding OpenCommand}" CommandParameter="{Binding}"
+                            Visibility="{Binding CanOpen, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Padding="10,2" Margin="8,0,0,0"/>
+                    <Button Grid.Column="3" Content="Edit context"
+                            Command="{Binding EditContextCommand}" CommandParameter="{Binding}"
+                            Padding="10,2" Margin="4,0,0,0"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
     </Window.Resources>
     <Grid>
         <TabControl SelectedIndex="{Binding SelectedTabIndex}">
@@ -47,14 +81,17 @@
                              FontSize="14" Padding="6" Margin="0,0,0,8"/>
                     <Button Grid.Row="1" Content="Search" Command="{Binding Search.SearchCommand}"
                             HorizontalAlignment="Left" Padding="16,4" Margin="0,0,0,8"/>
-                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                        <StackPanel>
-                            <TextBlock Text="No results" Foreground="Gray" FontStyle="Italic"
-                                       Visibility="{Binding Search.HasSearched, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <Grid Grid.Row="2">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      Visibility="{Binding Search.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                             <ItemsControl ItemsSource="{Binding Search.Results}"
-                                          ItemTemplate="{StaticResource FileRowTemplate}"/>
-                        </StackPanel>
-                    </ScrollViewer>
+                                          ItemTemplate="{StaticResource SearchResultTemplate}"/>
+                        </ScrollViewer>
+                        <TextBlock Text="No results. Try a different keyword, or use reason:term to search the reason field."
+                                   Foreground="Gray" FontStyle="Italic" FontSize="13"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Visibility="{Binding Search.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </Grid>
                 </Grid>
             </TabItem>
             <TabItem Header="Inbox">

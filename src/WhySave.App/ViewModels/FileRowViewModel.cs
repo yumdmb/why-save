@@ -17,15 +17,30 @@ public partial class FileRowViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(CanAddWhy))]
     private IRelayCommand? _addWhyCommand;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanOpen))]
+    private IRelayCommand? _openCommand;
+
+    [ObservableProperty]
+    private IRelayCommand? _editContextCommand;
+
     public bool CanAddWhy => AddWhyCommand is not null;
+
+    public bool CanOpen => OpenCommand is not null;
 
     public string Id => _record.Id;
 
     public string Filename => _record.Filename;
 
+    public string Path => _record.Path;
+
     public string? Project => _record.Project;
 
     public string Status => _record.Status;
+
+    public string? ReasonSnippet => _record.Reason is null || _record.Reason.Length <= 120
+        ? _record.Reason
+        : _record.Reason.Substring(0, 120) + "…";
 
     public DateTimeOffset? SavedAt => _record.SavedAt.HasValue
         ? DateTimeOffset.FromUnixTimeMilliseconds(_record.SavedAt.Value)

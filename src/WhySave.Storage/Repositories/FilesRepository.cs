@@ -82,6 +82,14 @@ public class FilesRepository
             new { id, now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
     }
 
+    public void MarkOpenedViaApp(string id)
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        _connection.Execute(
+            "UPDATE files SET last_opened_via_app_at = @now, updated_at = @now WHERE id = @id",
+            new { id, now });
+    }
+
     public FileRecord? GetById(string id) =>
         DecryptFields(_connection.QueryFirstOrDefault<FileRecord>(
             "SELECT * FROM files WHERE id = @id", new { id }));

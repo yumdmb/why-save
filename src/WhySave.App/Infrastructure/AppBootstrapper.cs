@@ -85,8 +85,11 @@ public sealed class AppBootstrapper : IDisposable
                     s.GetRequiredService<FilesRepository>(),
                     s.GetRequiredService<IAddContextDialogService>()));
 
+                services.AddSingleton<SearchService>();
                 services.AddSingleton(s => new SearchViewModel(
+                    s.GetRequiredService<SearchService>(),
                     s.GetRequiredService<FilesRepository>(),
+                    s.GetRequiredService<IAddContextDialogService>(),
                     s.GetRequiredService<ILogger>()));
                 services.AddSingleton(s => new InboxViewModel(
                     s.GetRequiredService<FilesRepository>(),
