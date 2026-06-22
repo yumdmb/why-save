@@ -95,10 +95,12 @@ public sealed class AppBootstrapper : IDisposable
                 services.AddSingleton<IAddContextDialogService, AddContextDialogService>();
                 services.AddSingleton<DataManagementService>();
                 services.AddSingleton<UpdateService>();
+                services.AddSingleton<IToastPresenter, InAppToastPresenter>();
                 services.AddSingleton(s => new ToastService(
                     s.GetRequiredService<ILogger>(),
                     s.GetRequiredService<FilesRepository>(),
-                    s.GetRequiredService<IAddContextDialogService>()));
+                    s.GetRequiredService<IAddContextDialogService>(),
+                    s.GetRequiredService<IToastPresenter>()));
 
                 services.AddSingleton<SearchService>();
                 services.AddSingleton(s => new SearchViewModel(
@@ -185,7 +187,6 @@ public sealed class AppBootstrapper : IDisposable
         var pipeline = Services.GetRequiredService<DetectionPipeline>();
         var sink = Services.GetRequiredService<IFileEventSink>();
         var toastService = Services.GetRequiredService<ToastService>();
-        toastService.Initialize();
         pipeline.PendingFileDetected += (_, fileId) => toastService.ShowPendingToast(fileId);
 
         pipeline.Start();
@@ -243,7 +244,6 @@ public sealed class AppBootstrapper : IDisposable
         Services.GetRequiredService<DetectionPipeline>().StopAsync().GetAwaiter().GetResult();
         Services.GetRequiredService<FileWatchService>().Dispose();
         Services.GetRequiredService<TrayService>().Stop();
-        Services.GetRequiredService<ToastService>().Dispose();
         _updateService?.ApplyStagedUpdateOnRestart();
         _updateService?.Dispose();
         _hourlyRescanTimer?.Dispose();

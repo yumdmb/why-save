@@ -85,6 +85,29 @@ public class ToastServiceTests : StorageTestBase
         Assert.Single(presenter.Shown);
     }
 
+    [Fact]
+    public void ShowPendingToast_AddContextCallback_OpensDialogForFile()
+    {
+        var repo = new FilesRepository(Connection, cryptoKey: null);
+        var dialog = new FakeAddContextDialogService();
+        var presenter = new FakeToastPresenter();
+        var toastService = new WhySave.App.Services.ToastService(CreateLogger(), repo, dialog, presenter);
+
+        var record = CreatePendingRecord("file5");
+        repo.Insert(record);
+
+        toastService.ShowPendingToast(record.Id);
+
+        Assert.NotNull(presenter.LastOnAddContext);
+        Assert.Empty(dialog.ShownFileIds);
+
+        // Simulate the user clicking "Add Context" on the notification.
+        presenter.LastOnAddContext!.Invoke();
+
+        Assert.Single(dialog.ShownFileIds);
+        Assert.Equal(record.Id, dialog.ShownFileIds[0]);
+    }
+
     private static FileRecord CreatePendingRecord(string id)
     {
         return new FileRecord

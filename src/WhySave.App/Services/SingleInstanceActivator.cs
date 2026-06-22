@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using System.Windows.Interop;
 using Serilog;
 using WhySave.Native;

@@ -99,7 +99,7 @@ powershell -ExecutionPolicy Bypass -File installer\build-msi.ps1
 - AES-GCM encryption with DPAPI key sealing
 - CommunityToolkit.Mvvm (MVVM pattern)
 - H.NotifyIcon.Wpf (tray icon)
-- Microsoft.Toolkit.Uwp.Notifications (native toasts)
+- In-app WPF notification windows (reliable in-process prompts)
 - Serilog (rolling file logs)
 
 ## License

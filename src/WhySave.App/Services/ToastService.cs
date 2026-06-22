@@ -1,10 +1,9 @@
-using Microsoft.Toolkit.Uwp.Notifications;
 using Serilog;
 using WhySave.Storage.Repositories;
 
 namespace WhySave.App.Services;
 
-public sealed class ToastService : IDisposable
+public sealed class ToastService
 {
     public static readonly TimeSpan DebouncePeriod = TimeSpan.FromMinutes(10);
 
@@ -22,17 +21,7 @@ public sealed class ToastService : IDisposable
         _logger = logger;
         _filesRepository = filesRepository;
         _dialogService = dialogService;
-        _presenter = presenter ?? new ToolkitToastPresenter();
-    }
-
-    public void Initialize()
-    {
-        ToastNotificationManagerCompat.OnActivated += OnToastActivated;
-    }
-
-    public void Dispose()
-    {
-        ToastNotificationManagerCompat.OnActivated -= OnToastActivated;
+        _presenter = presenter ?? new InAppToastPresenter();
     }
 
     public void ShowPendingToast(string fileId)
@@ -67,12 +56,12 @@ public sealed class ToastService : IDisposable
 
         _logger.Information("Showing pending toast for {FileId} ({Filename})", fileId, record.Filename);
 
-        var arguments = $"action=addContext&fileId={Uri.EscapeDataString(fileId)}";
-        var laterArguments = $"action=later&fileId={Uri.EscapeDataString(fileId)}";
-
         try
         {
-            _presenter.Show(record, arguments, laterArguments);
+            _presenter.Show(
+                record,
+                onAddContext: () => OnAddContext(fileId),
+                onLater: () => _logger.Debug("Toast dismissed (later) for {FileId}", fileId));
         }
         catch (Exception ex)
         {
@@ -80,45 +69,9 @@ public sealed class ToastService : IDisposable
         }
     }
 
-    public void HandleActivation(ToastNotificationActivatedEventArgsCompat e)
+    private void OnAddContext(string fileId)
     {
-        if (string.IsNullOrEmpty(e.Argument))
-            return;
-
-        var args = ToastArguments.Parse(e.Argument);
-        if (!args.TryGetValue("action", out var action) ||
-            !args.TryGetValue("fileId", out var fileId) ||
-            string.IsNullOrEmpty(fileId))
-        {
-            return;
-        }
-
-        _logger.Information("Toast activated: {Action} for {FileId}", action, fileId);
-
-        var record = _filesRepository.GetById(fileId);
-        if (record is null)
-            return;
-
-        var nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        record.LastPromptedAt = nowMs;
-        record.UpdatedAt = nowMs;
-        _filesRepository.Update(record);
-
-        if (action == "addContext")
-        {
-            _dialogService.ShowAddContext(fileId);
-        }
-    }
-
-    private void OnToastActivated(ToastNotificationActivatedEventArgsCompat e)
-    {
-        try
-        {
-            HandleActivation(e);
-        }
-        catch (Exception ex)
-        {
-            _logger.Error(ex, "Error handling toast activation");
-        }
+        _logger.Information("Add Context chosen from toast for {FileId}", fileId);
+        _dialogService.ShowAddContext(fileId);
     }
 }
