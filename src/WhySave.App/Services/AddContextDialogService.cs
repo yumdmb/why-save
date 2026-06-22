@@ -20,25 +20,38 @@ public sealed class AddContextDialogService : IAddContextDialogService
         if (Application.Current is null)
             return;
 
-        Application.Current.Dispatcher.Invoke(() =>
+        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
         {
-            var filesRepository = _services.GetRequiredService<FilesRepository>();
-            var record = filesRepository.GetById(fileId);
-            if (record is null)
-                return;
+            try
+            {
+                var filesRepository = _services.GetRequiredService<FilesRepository>();
+                var record = filesRepository.GetById(fileId);
+                if (record is null)
+                    return;
 
-            var recentProjects = filesRepository.GetRecentProjects(50).ToList();
-            var viewModel = new AddContextViewModel(
-                record,
-                filesRepository,
-                _services.GetRequiredService<ILogger>(),
-                recentProjects);
+                var recentProjects = filesRepository.GetRecentProjects(50).ToList();
+                var viewModel = new AddContextViewModel(
+                    record,
+                    filesRepository,
+                    _services.GetRequiredService<ILogger>(),
+                    recentProjects);
 
-            var window = new AddContextWindow(viewModel);
-            window.Closed += (_, _) => RefreshInboxIfVisible();
-            window.Show();
-            window.Activate();
-        });
+                var window = new AddContextWindow(viewModel);
+                window.Closed += (_, _) => RefreshInboxIfVisible();
+                window.Show();
+                window.Activate();
+            }
+            catch (Exception ex)
+            {
+                var logger = _services.GetRequiredService<ILogger>();
+                logger.Error(ex, "Failed to open Add Context window for {FileId}", fileId);
+                MessageBox.Show(
+                    $"Failed to open the Add Context form:\n\n{ex.Message}",
+                    "Why Save - Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }));
     }
 
     private static void RefreshInboxIfVisible()

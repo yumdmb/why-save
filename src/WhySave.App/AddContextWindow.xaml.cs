@@ -9,10 +9,6 @@ public partial class AddContextWindow : Window
     {
         InitializeComponent();
         DataContext = viewModel;
-        viewModel.RequestClose += (_, _) =>
-        {
-            DialogResult = viewModel.Saved;
-            Close();
-        };
+        viewModel.RequestClose += (_, _) => Close();
     }
 }

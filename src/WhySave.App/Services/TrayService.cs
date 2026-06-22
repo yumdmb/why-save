@@ -60,6 +60,8 @@ public sealed class TrayService : IDisposable
             Visibility = Visibility.Visible,
         };
 
+        _trayIcon.ForceCreate();
+
         _trayIcon.TrayLeftMouseDown += (_, _) => ShowTab(MainTab.Search);
 
         var menu = new ContextMenu();
@@ -121,13 +123,14 @@ public sealed class TrayService : IDisposable
 
     public void ShowTab(MainTab tab)
     {
-        _mainWindow.Dispatcher.Invoke(() =>
+        _mainWindow.Dispatcher.BeginInvoke(new Action(() =>
         {
             _mainWindow.SelectTab(tab);
             _mainWindow.Show();
             _mainWindow.WindowState = WindowState.Normal;
             _mainWindow.Activate();
-        });
+            _mainWindow.Focus();
+        }));
     }
 
     public void RefreshPendingCount()
@@ -146,23 +149,28 @@ public sealed class TrayService : IDisposable
         {
             _inboxMenuItem.Header = badge;
         });
-
-        if (_mainWindow.DataContext is MainViewModel vm)
-        {
-            vm.Inbox.Refresh();
-        }
     }
 
     private void OpenSettings()
     {
-        var settingsWindow = new SettingsWindow(
-            _settingsService,
-            _fileWatchService,
-            _hotKeyService,
-            _junkFilter,
-            _dataManagement,
-            _logger);
-        settingsWindow.Show();
+        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+        {
+            var existing = Application.Current.Windows.OfType<SettingsWindow>().FirstOrDefault();
+            if (existing is not null)
+            {
+                existing.Activate();
+                return;
+            }
+
+            var settingsWindow = new SettingsWindow(
+                _settingsService,
+                _fileWatchService,
+                _hotKeyService,
+                _junkFilter,
+                _dataManagement,
+                _logger);
+            settingsWindow.Show();
+        }));
     }
 
     private void TogglePause()

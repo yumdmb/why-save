@@ -6,7 +6,7 @@
         mc:Ignorable="d"
         Title="Settings" Height="680" Width="560"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="CanResizeWithMinimize"
+        ResizeMode="CanResize"
         MinHeight="560" MinWidth="480">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="20">

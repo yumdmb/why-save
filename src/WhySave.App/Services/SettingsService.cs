@@ -89,7 +89,7 @@ public sealed class SettingsService : IDisposable
 
         if (startWithWindows)
         {
-            var exePath = Environment.ProcessPath ?? typeof(App).Assembly.Location;
+            var exePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "WhySave.App.exe");
             key.SetValue(valueName, exePath);
             _logger.Information("Added WhySave to HKCU Run");
         }

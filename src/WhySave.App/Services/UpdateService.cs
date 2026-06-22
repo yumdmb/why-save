@@ -47,7 +47,7 @@ public sealed class UpdateService : IDisposable
         _httpClient = new HttpClient();
         _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("WhySave/1.0 (self-update)");
 
-        _exePath = Environment.ProcessPath ?? Assembly.GetExecutingAssembly().Location;
+        _exePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "WhySave.App.exe");
         _installDir = Path.GetDirectoryName(_exePath) ?? AppContext.BaseDirectory;
     }
 

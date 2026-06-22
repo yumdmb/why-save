@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.Notifications;
 using Serilog;
@@ -20,6 +21,10 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
+        Dispatcher.CurrentDispatcher.UnhandledException += OnDispatcherUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
         ToastNotificationManagerCompat.OnActivated += OnToastActivated;
 
@@ -52,6 +57,7 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         ToastNotificationManagerCompat.OnActivated -= OnToastActivated;
+        TaskScheduler.UnobservedTaskException -= OnUnobservedTaskException;
 
         if (_bootstrapper is not null)
         {
@@ -79,5 +85,31 @@ public partial class App : Application
         {
             _logger.Error(ex, "Failed to handle toast activation");
         }
+    }
+
+    private void OnDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+            _logger.Fatal(ex, "AppDomain unhandled exception (isTerminating={IsTerminating})", e.IsTerminating);
+        else
+            _logger.Fatal("AppDomain unhandled exception: {ExceptionObject}", e.ExceptionObject);
+        Log.CloseAndFlush();
+    }
+
+    private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        _logger.Error(e.Exception, "UI thread unhandled exception");
+        MessageBox.Show(
+            $"An unexpected error occurred:\n\n{e.Exception.Message}\n\nSee the log file at %LOCALAPPDATA%\\WhySave\\logs\\ for details.",
+            "Why Save - Unexpected Error",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
+        e.Handled = true;
+    }
+
+    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        _logger.Error(e.Exception, "Unobserved task exception");
+        e.SetObserved();
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
 using WhySave.App.ViewModels;
 
 namespace WhySave.App;
@@ -17,7 +19,32 @@ public partial class MainWindow : Window
             vm.SelectTab(tab);
     }
 
-    private void InboxListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    private void Window_Closing(object sender, CancelEventArgs e)
+    {
+        e.Cancel = true;
+        Hide();
+    }
+
+    private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (DataContext is not MainViewModel vm)
+            return;
+
+        if (e.Source is not TabControl)
+            return;
+
+        switch ((MainTab)vm.SelectedTabIndex)
+        {
+            case MainTab.Inbox:
+                vm.Inbox.Refresh();
+                break;
+            case MainTab.Library:
+                vm.Library.Refresh();
+                break;
+        }
+    }
+
+    private void InboxListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (DataContext is not MainViewModel vm) return;
 
