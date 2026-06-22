@@ -38,6 +38,24 @@ public sealed class DpapiKeyStore : IDisposable
         return _key;
     }
 
+    public void ReplaceKey(byte[] newKey)
+    {
+        ArgumentNullException.ThrowIfNull(newKey);
+        if (newKey.Length != AesGcmCrypto.KeySize)
+            throw new ArgumentException($"Key must be {AesGcmCrypto.KeySize} bytes.", nameof(newKey));
+
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        var oldKey = _key;
+        _key = newKey;
+
+        var sealedBytes = ProtectedData.Protect(_key, null, DataProtectionScope.CurrentUser);
+        File.WriteAllBytes(_keyFilePath, sealedBytes);
+
+        if (oldKey is not null)
+            CryptographicOperations.ZeroMemory(oldKey);
+    }
+
     public void Dispose()
     {
         if (_disposed)

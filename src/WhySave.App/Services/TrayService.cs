@@ -17,6 +17,8 @@ public sealed class TrayService : IDisposable
     private readonly FileWatchService _fileWatchService;
     private readonly SettingsService _settingsService;
     private readonly GlobalHotKeyService _hotKeyService;
+    private readonly JunkFilter _junkFilter;
+    private readonly DataManagementService _dataManagement;
     private readonly ILogger _logger;
     private TaskbarIcon? _trayIcon;
     private MenuItem? _inboxMenuItem;
@@ -29,6 +31,8 @@ public sealed class TrayService : IDisposable
         FileWatchService fileWatchService,
         SettingsService settingsService,
         GlobalHotKeyService hotKeyService,
+        JunkFilter junkFilter,
+        DataManagementService dataManagement,
         ILogger logger)
     {
         _mainWindow = mainWindow;
@@ -36,6 +40,8 @@ public sealed class TrayService : IDisposable
         _fileWatchService = fileWatchService;
         _settingsService = settingsService;
         _hotKeyService = hotKeyService;
+        _junkFilter = junkFilter;
+        _dataManagement = dataManagement;
         _logger = logger;
     }
 
@@ -149,7 +155,13 @@ public sealed class TrayService : IDisposable
 
     private void OpenSettings()
     {
-        var settingsWindow = new SettingsWindow(_settingsService, _fileWatchService, _hotKeyService, _logger);
+        var settingsWindow = new SettingsWindow(
+            _settingsService,
+            _fileWatchService,
+            _hotKeyService,
+            _junkFilter,
+            _dataManagement,
+            _logger);
         settingsWindow.Show();
     }
 

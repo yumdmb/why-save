@@ -1,8 +1,8 @@
 using System.Windows;
+using Serilog;
 using WhySave.App.Services;
 using WhySave.App.ViewModels;
 using WhySave.Core;
-using Serilog;
 
 namespace WhySave.App;
 
@@ -12,11 +12,19 @@ public partial class SettingsWindow : Window
         SettingsService settingsService,
         FileWatchService fileWatchService,
         GlobalHotKeyService hotKeyService,
+        JunkFilter junkFilter,
+        DataManagementService dataManagement,
         ILogger logger)
     {
         InitializeComponent();
 
-        var vm = new SettingsViewModel(settingsService, fileWatchService, hotKeyService, logger);
+        var vm = new SettingsViewModel(
+            settingsService,
+            fileWatchService,
+            hotKeyService,
+            junkFilter,
+            dataManagement,
+            logger);
         vm.RequestClose += (_, _) => Close();
         DataContext = vm;
     }

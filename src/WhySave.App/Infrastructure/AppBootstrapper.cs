@@ -57,7 +57,18 @@ public sealed class AppBootstrapper : IDisposable
                     s.GetRequiredService<IIdentityResolver>(),
                     s.GetRequiredService<FilesRepository>(),
                     s.GetRequiredService<AppMetaRepository>()));
-                services.AddSingleton(s => new JunkFilter());
+                services.AddSingleton(s =>
+                {
+                    var settings = _settingsService.Current;
+                    return new JunkFilter(new JunkFilterRules
+                    {
+                        BlockGlobs = settings.JunkRules.BlockGlobs.Any()
+                            ? settings.JunkRules.BlockGlobs
+                            : JunkFilter.DefaultBlockGlobs,
+                        AllowGlobs = settings.JunkRules.AllowGlobs,
+                        MinSizeBytes = settings.JunkRules.MinSizeBytes,
+                    });
+                });
                 services.AddSingleton(Channel.CreateUnbounded<FileEvent>());
                 services.AddSingleton<IFileEventSink>(s => new ChannelFileEventSink(s.GetRequiredService<Channel<FileEvent>>()));
                 services.AddSingleton(s => new FileWatchService(
@@ -80,6 +91,7 @@ public sealed class AppBootstrapper : IDisposable
                     (msg, ex) => _logger.Information(ex, "{RescanMessage}", msg)));
 
                 services.AddSingleton<IAddContextDialogService, AddContextDialogService>();
+                services.AddSingleton<DataManagementService>();
                 services.AddSingleton(s => new ToastService(
                     s.GetRequiredService<ILogger>(),
                     s.GetRequiredService<FilesRepository>(),

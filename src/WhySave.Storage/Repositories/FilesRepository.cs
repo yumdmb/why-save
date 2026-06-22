@@ -9,7 +9,7 @@ namespace WhySave.Storage.Repositories;
 public class FilesRepository
 {
     private readonly SqliteConnection _connection;
-    private readonly byte[]? _cryptoKey;
+    private byte[]? _cryptoKey;
 
     static FilesRepository()
     {
@@ -22,6 +22,11 @@ public class FilesRepository
     {
         _connection = connection;
         _cryptoKey = cryptoKey;
+    }
+
+    public void UpdateCryptoKey(byte[]? newKey)
+    {
+        _cryptoKey = newKey;
     }
 
     public void Insert(FileRecord record)
@@ -67,6 +72,11 @@ public class FilesRepository
     public void Delete(string id)
     {
         _connection.Execute("DELETE FROM files WHERE id = @id", new { id });
+    }
+
+    public void ClearAll()
+    {
+        _connection.Execute("DELETE FROM files");
     }
 
     public void MarkMissing(string id)
