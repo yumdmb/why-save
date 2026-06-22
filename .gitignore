@@ -104,6 +104,7 @@ settings.json
 # AI Agents Files
 .agents/
 .opencode/
+.kiro/
 openspec/
 skills-lock.json
 

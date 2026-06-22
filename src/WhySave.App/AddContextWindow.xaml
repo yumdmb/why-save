@@ -1,0 +1,50 @@
+<Window x:Class="WhySave.App.AddContextWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Add Context" Height="520" Width="540"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResizeWithMinimize"
+        MinHeight="400" MinWidth="420">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+            <TextBlock Text="{Binding Filename, StringFormat='Add context for {0}'}"
+                       FontSize="18" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <TextBlock Text="{Binding Path}" Foreground="Gray" FontSize="11"
+                       TextTrimming="CharacterEllipsis" Margin="0,0,0,18"/>
+
+            <Label Content="Reason" Padding="0,0,0,2"/>
+            <TextBox Text="{Binding Reason}" TextWrapping="Wrap"
+                     AcceptsReturn="True" Height="80"
+                     VerticalScrollBarVisibility="Auto"
+                     Margin="0,0,0,14"/>
+
+            <Label Content="Project" Padding="0,0,0,2"/>
+            <ComboBox IsEditable="True"
+                      ItemsSource="{Binding RecentProjects}"
+                      Text="{Binding Project, UpdateSourceTrigger=PropertyChanged}"
+                      Margin="0,0,0,14"/>
+
+            <Label Content="Source URL" Padding="0,0,0,2"/>
+            <TextBox Text="{Binding SourceUrl}" Margin="0,0,0,14"/>
+
+            <Label Content="Notes" Padding="0,0,0,2"/>
+            <TextBox Text="{Binding Notes}" TextWrapping="Wrap"
+                     AcceptsReturn="True" Height="80"
+                     VerticalScrollBarVisibility="Auto"
+                     Margin="0,0,0,14"/>
+
+            <Label Content="Saved date" Padding="0,0,0,2"/>
+            <DatePicker SelectedDate="{Binding SavedDate}" Margin="0,0,0,20"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Cancel" Command="{Binding CancelCommand}"
+                        Padding="18,5" Margin="0,0,10,0" IsCancel="True"/>
+                <Button Content="Save" Command="{Binding SaveCommand}"
+                        Padding="18,5" IsDefault="True"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

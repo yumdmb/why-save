@@ -43,6 +43,8 @@ public sealed class DetectionPipeline : IDisposable
 
     public Channel<FileEvent> Input => _channel;
 
+    public event EventHandler<string>? PendingFileDetected;
+
     public void Post(FileEvent evt) => _channel.Writer.TryWrite(evt);
 
     public void Start(CancellationToken externalCt = default)
@@ -177,8 +179,14 @@ public sealed class DetectionPipeline : IDisposable
             }
 
             _log($"Quiet period satisfied, ingesting: {check.Path}", null);
-            await _ingester.IngestAsync(new IngestRequest(
+            var result = await _ingester.IngestAsync(new IngestRequest(
                 check.Path, null, null, null, _timeProvider.UtcNow, FileIngester.SourceWatcher), ct);
+
+            if (result.Status == "pending")
+            {
+                _log($"Pending file detected, raising toast for: {check.Path}", null);
+                PendingFileDetected?.Invoke(this, result.FileId);
+            }
         }
         catch (OperationCanceledException)
         {

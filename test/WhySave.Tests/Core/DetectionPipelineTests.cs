@@ -159,4 +159,22 @@ public class DetectionPipelineTests : StorageTestBase, IDisposable
         Assert.Equal("missing", after!.Status);
         Assert.Equal("pending", after.PriorStatus);
     }
+
+    [Fact]
+    public async Task Pending_File_Raises_PendingFileDetected_Event()
+    {
+        var path = Path.Combine(_tempDir, "event.pdf");
+        File.WriteAllBytes(path, new byte[2048]);
+
+        string? detectedFileId = null;
+        _pipeline.PendingFileDetected += (_, fileId) => detectedFileId = fileId;
+
+        await _pipeline.HandleEventAsync(new FileEvent(path, FileEventKind.Created, _timeProvider.UtcNow), default);
+        _timeProvider.Advance(DetectionPipeline.QuietPeriod + TimeSpan.FromMilliseconds(50));
+        await _pipeline.WaitForPendingChecksAsync();
+
+        var record = _filesRepo.GetByPath(path);
+        Assert.NotNull(record);
+        Assert.Equal(record!.Id, detectedFileId);
+    }
 }

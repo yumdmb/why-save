@@ -79,11 +79,18 @@ public sealed class AppBootstrapper : IDisposable
                     downloadsPathProvider: null,
                     (msg, ex) => _logger.Information(ex, "{RescanMessage}", msg)));
 
+                services.AddSingleton<IAddContextDialogService, AddContextDialogService>();
+                services.AddSingleton(s => new ToastService(
+                    s.GetRequiredService<ILogger>(),
+                    s.GetRequiredService<FilesRepository>(),
+                    s.GetRequiredService<IAddContextDialogService>()));
+
                 services.AddSingleton(s => new SearchViewModel(
                     s.GetRequiredService<FilesRepository>(),
                     s.GetRequiredService<ILogger>()));
                 services.AddSingleton(s => new InboxViewModel(
                     s.GetRequiredService<FilesRepository>(),
+                    s.GetRequiredService<IAddContextDialogService>(),
                     s.GetRequiredService<ILogger>()));
                 services.AddSingleton(s => new LibraryViewModel(
                     s.GetRequiredService<FilesRepository>(),
@@ -155,6 +162,9 @@ public sealed class AppBootstrapper : IDisposable
         var watchService = Services.GetRequiredService<FileWatchService>();
         var pipeline = Services.GetRequiredService<DetectionPipeline>();
         var sink = Services.GetRequiredService<IFileEventSink>();
+        var toastService = Services.GetRequiredService<ToastService>();
+        toastService.Initialize();
+        pipeline.PendingFileDetected += (_, fileId) => toastService.ShowPendingToast(fileId);
 
         pipeline.Start();
 
@@ -194,6 +204,7 @@ public sealed class AppBootstrapper : IDisposable
         Services.GetRequiredService<DetectionPipeline>().StopAsync().GetAwaiter().GetResult();
         Services.GetRequiredService<FileWatchService>().Dispose();
         Services.GetRequiredService<TrayService>().Stop();
+        Services.GetRequiredService<ToastService>().Dispose();
         _host.StopAsync().GetAwaiter().GetResult();
     }
 

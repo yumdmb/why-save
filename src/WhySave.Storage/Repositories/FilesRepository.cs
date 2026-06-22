@@ -124,6 +124,19 @@ public class FilesRepository
         return DecryptFields(results);
     }
 
+    public IEnumerable<string> GetRecentProjects(int limit = 50)
+    {
+        return _connection.Query<string>(
+            """
+            SELECT project FROM files
+            WHERE project IS NOT NULL AND project <> ''
+            GROUP BY project
+            ORDER BY MAX(updated_at) DESC
+            LIMIT @limit
+            """,
+            new { limit });
+    }
+
     private void EncryptFields(FileRecord record)
     {
         if (_cryptoKey is null)

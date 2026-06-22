@@ -26,6 +26,10 @@
                             Background="{Binding Status, Converter={StaticResource StatusToBrushConverter}}">
                         <TextBlock Text="{Binding StatusBadge}" FontSize="11" Foreground="White"/>
                     </Border>
+                    <Button Grid.Column="2" Content="Add why"
+                            Command="{Binding AddWhyCommand}" CommandParameter="{Binding}"
+                            Visibility="{Binding CanAddWhy, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Padding="8,2" Margin="8,0,0,0"/>
                 </Grid>
             </Border>
         </DataTemplate>
@@ -61,8 +65,10 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0" Text="{Binding Inbox.PendingCount, StringFormat='{}{0} files need context'}"
-                               FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+                               FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"
+                               Visibility="{Binding Inbox.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8"
+                                Visibility="{Binding Inbox.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                         <Button Content="Dismiss to legacy" Command="{Binding Inbox.DismissSelectedToLegacyCommand}" Margin="0,0,8,0" Padding="12,4"/>
                         <Button Content="Delete record" Command="{Binding Inbox.DeleteSelectedCommand}" Padding="12,4"/>
                     </StackPanel>
@@ -70,7 +76,12 @@
                               SelectionMode="Extended"
                               ItemTemplate="{StaticResource FileRowTemplate}"
                               SelectionChanged="InboxListView_SelectionChanged"
-                              BorderThickness="1" BorderBrush="#FFD0D0D0"/>
+                              BorderThickness="1" BorderBrush="#FFD0D0D0"
+                              Visibility="{Binding Inbox.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                    <TextBlock Grid.Row="2" Text="Your Memory Inbox is empty. New downloads will appear here."
+                               Foreground="Gray" FontStyle="Italic" FontSize="14"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Visibility="{Binding Inbox.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Library">

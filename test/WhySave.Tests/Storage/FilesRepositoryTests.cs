@@ -206,4 +206,25 @@ public class FilesRepositoryTests : StorageTestBase
         var results = repo.SearchFts("report", limit: 3).ToList();
         Assert.Equal(3, results.Count);
     }
+
+    [Fact]
+    public void GetRecentProjects_Returns_Distinct_NonEmpty_Projects_Ordered_By_Recent()
+    {
+        var repo = new FilesRepository(Connection);
+        var ml = NewRecord("proj1", project: "ML-course", url: null);
+        var general = NewRecord("proj2", project: "general", url: null);
+        repo.Insert(ml);
+        repo.Insert(general);
+        repo.Insert(NewRecord("proj3", project: "ML-course", url: null));
+        repo.Insert(NewRecord("proj4", project: null, url: null));
+        repo.Insert(NewRecord("proj5", project: "", url: null));
+
+        ml.UpdatedAt = 9999;
+        repo.Update(ml);
+
+        var projects = repo.GetRecentProjects(10).ToList();
+        Assert.Equal(2, projects.Count);
+        Assert.Equal("ML-course", projects[0]);
+        Assert.Equal("general", projects[1]);
+    }
 }

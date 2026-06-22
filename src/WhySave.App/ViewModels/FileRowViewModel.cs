@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using WhySave.Storage.Models;
 
 namespace WhySave.App.ViewModels;
@@ -11,6 +12,12 @@ public partial class FileRowViewModel : ObservableObject
     {
         _record = record;
     }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanAddWhy))]
+    private IRelayCommand? _addWhyCommand;
+
+    public bool CanAddWhy => AddWhyCommand is not null;
 
     public string Id => _record.Id;
 
