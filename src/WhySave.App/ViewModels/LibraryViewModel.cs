@@ -17,6 +17,9 @@ public partial class LibraryViewModel : ObservableObject
     [ObservableProperty]
     private string _browseFilter = "";
 
+    [ObservableProperty]
+    private bool _isEmpty = true;
+
     public LibraryViewModel(FilesRepository filesRepository, ILogger logger)
     {
         _filesRepository = filesRepository;
@@ -37,6 +40,7 @@ public partial class LibraryViewModel : ObservableObject
             Items.Add(new FileRowViewModel(record));
         }
 
+        IsEmpty = Items.Count == 0;
         _logger.Information("Library refreshed; {Count} items", Items.Count);
     }
 

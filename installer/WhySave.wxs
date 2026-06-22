@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  WiX source for a per-user MSI installer.
+  Installs to %LOCALAPPDATA%\Programs\WhySave\ with no UAC prompt.
+  Writes the per-user HKCU Run registry entry for start-with-Windows.
+  Build with: wix build WhySave.wxs -o WhySave.msi
+  (Requires WiX v4+: https://wixtoolset.org/)
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package
+    Name="Why Save"
+    Manufacturer="Why Save"
+    Version="1.0.0"
+    Language="1033"
+    Codepage="1252"
+    InstallerVersion="500">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Why Save is already installed." />
+    <Media Id="1" Cabinet="WhySave.cab" EmbedCab="yes" />
+
+    <Property Id="ApplicationFolderName" Value="WhySave" />
+    <Property Id="WixAppFolder" Value="WixPerUserFolder" />
+
+    <Feature Id="MainFeature" Title="Why Save" Level="1">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentRef Id="RegistryEntry" />
+      <ComponentRef Id="ShortcutComponent" />
+    </Feature>
+
+    <UI>
+      <UIRef Id="WixUI_InstallDir" />
+      <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    </UI>
+
+    <Property Id="INSTALLFOLDER" Value="[%LOCALAPPDATA]\Programs\WhySave" />
+  </Package>
+
+  <Fragment>
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="ProgramsFolder" Name="Programs">
+        <Directory Id="INSTALLFOLDER" Name="WhySave">
+          <Component Id="ShortcutComponent" Guid="a1b2c3d4-0001-0000-0000-000000000001">
+            <Shortcut Id="AppShortcut"
+                      Name="Why Save"
+                      Target="[INSTALLFOLDER]WhySave.App.exe"
+                      Directory="ProgramMenuFolder"
+                      WorkingDirectory="INSTALLFOLDER"
+                      Icon="AppIcon.ico" />
+            <RemoveFolder Id="RemoveShortcut" Directory="ProgramMenuFolder" On="uninstall" />
+            <RegistryValue Root="HKCU" Key="Software\WhySave" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+          </Component>
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="AppFiles">
+      <Component Id="MainExe" Guid="a1b2c3d4-0002-0000-0000-000000000002" Directory="INSTALLFOLDER">
+        <File Id="WhySaveExe" Source="$(var.BuildDir)\WhySave.App.exe" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <Component Id="RegistryEntry" Guid="a1b2c3d4-0003-0000-0000-000000000003" Directory="INSTALLFOLDER">
+      <RegistryValue Root="HKCU"
+                     Key="Software\Microsoft\Windows\CurrentVersion\Run"
+                     Name="WhySave"
+                     Type="string"
+                     Value="[INSTALLFOLDER]WhySave.App.exe"
+                     KeyPath="yes" />
+    </Component>
+  </Fragment>
+
+  <Icon Id="AppIcon.ico" SourceFile="$(var.BuildDir)\WhySave.App.exe" />
+</Wix>

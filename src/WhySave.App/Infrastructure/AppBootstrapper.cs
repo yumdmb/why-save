@@ -23,6 +23,8 @@ public sealed class AppBootstrapper : IDisposable
     private readonly SingleInstanceActivator _activator;
     private readonly GlobalHotKeyService _hotKeyService;
     private readonly SettingsService _settingsService;
+    private UpdateService? _updateService;
+    private Timer? _hourlyRescanTimer;
 
     public AppBootstrapper()
     {
@@ -92,6 +94,7 @@ public sealed class AppBootstrapper : IDisposable
 
                 services.AddSingleton<IAddContextDialogService, AddContextDialogService>();
                 services.AddSingleton<DataManagementService>();
+                services.AddSingleton<UpdateService>();
                 services.AddSingleton(s => new ToastService(
                     s.GetRequiredService<ILogger>(),
                     s.GetRequiredService<FilesRepository>(),
@@ -174,6 +177,10 @@ public sealed class AppBootstrapper : IDisposable
 
         _settingsService.ApplyStartWithWindows(_settingsService.Current.StartWithWindows);
 
+        _updateService = Services.GetRequiredService<UpdateService>();
+        _updateService.CheckAndApplyStagedUpdate();
+        _updateService.Start();
+
         var watchService = Services.GetRequiredService<FileWatchService>();
         var pipeline = Services.GetRequiredService<DetectionPipeline>();
         var sink = Services.GetRequiredService<IFileEventSink>();
@@ -203,6 +210,23 @@ public sealed class AppBootstrapper : IDisposable
             {
                 var rescan = Services.GetRequiredService<RescanService>();
                 await rescan.RunStartupDiffAsync(watchedFolders);
+
+                _hourlyRescanTimer = new Timer(
+                    _ => _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await Services.GetRequiredService<RescanService>()
+                                .HourlyRescanAsync(watchedFolders);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(ex, "Hourly rescan failed");
+                        }
+                    }),
+                    null,
+                    TimeSpan.FromHours(1),
+                    TimeSpan.FromHours(1));
             }
             catch (Exception ex)
             {
@@ -220,6 +244,9 @@ public sealed class AppBootstrapper : IDisposable
         Services.GetRequiredService<FileWatchService>().Dispose();
         Services.GetRequiredService<TrayService>().Stop();
         Services.GetRequiredService<ToastService>().Dispose();
+        _updateService?.ApplyStagedUpdateOnRestart();
+        _updateService?.Dispose();
+        _hourlyRescanTimer?.Dispose();
         _host.StopAsync().GetAwaiter().GetResult();
     }
 
