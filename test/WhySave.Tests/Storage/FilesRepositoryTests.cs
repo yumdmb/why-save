@@ -186,6 +186,17 @@ public class FilesRepositoryTests : StorageTestBase
     }
 
     [Fact]
+    public void Delete_Removes_Record()
+    {
+        var repo = new FilesRepository(Connection);
+        repo.Insert(NewRecord("del1"));
+
+        repo.Delete("del1");
+
+        Assert.Null(repo.GetById("del1"));
+    }
+
+    [Fact]
     public void SearchFts_Respects_Limit()
     {
         var repo = new FilesRepository(Connection);

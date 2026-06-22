@@ -1,9 +1,12 @@
 using System.Threading.Channels;
+using System.Windows;
+using System.Windows.Threading;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using WhySave.App.Services;
+using WhySave.App.ViewModels;
 using WhySave.Core;
 using WhySave.Crypto;
 using WhySave.Storage;
@@ -17,6 +20,9 @@ public sealed class AppBootstrapper : IDisposable
     private readonly ILogger _logger;
     private readonly SqliteConnection _connection;
     private readonly DpapiKeyStore _keyStore;
+    private readonly SingleInstanceActivator _activator;
+    private readonly GlobalHotKeyService _hotKeyService;
+    private readonly SettingsService _settingsService;
 
     public AppBootstrapper()
     {
@@ -25,11 +31,17 @@ public sealed class AppBootstrapper : IDisposable
 
         AppPaths.EnsureAppDataDirExists();
 
+        _settingsService = new SettingsService(AppPaths.SettingsPath, _logger);
+        LoggerSetup.SetVerbose(_settingsService.Current.LogLevelVerbose);
+
         _connection = SqliteConnectionFactory.Create(AppPaths.DatabasePath);
         new DatabaseMigrator(_connection).MigrateAsync();
 
         _keyStore = new DpapiKeyStore(AppPaths.KeyPath);
         var key = _keyStore.GetOrCreateKey();
+
+        _activator = new SingleInstanceActivator(_logger);
+        _hotKeyService = new GlobalHotKeyService(_logger);
 
         _host = new HostBuilder()
             .UseSerilog(_logger, dispose: true)
@@ -37,6 +49,7 @@ public sealed class AppBootstrapper : IDisposable
             {
                 services.AddSingleton(_connection);
                 services.AddSingleton(_keyStore);
+                services.AddSingleton(_settingsService);
                 services.AddSingleton(s => new FilesRepository(_connection, key));
                 services.AddSingleton(s => new AppMetaRepository(_connection));
                 services.AddSingleton<IIdentityResolver>(s => new IdentityResolver(s.GetRequiredService<FilesRepository>()));
@@ -66,10 +79,61 @@ public sealed class AppBootstrapper : IDisposable
                     downloadsPathProvider: null,
                     (msg, ex) => _logger.Information(ex, "{RescanMessage}", msg)));
 
+                services.AddSingleton(s => new SearchViewModel(
+                    s.GetRequiredService<FilesRepository>(),
+                    s.GetRequiredService<ILogger>()));
+                services.AddSingleton(s => new InboxViewModel(
+                    s.GetRequiredService<FilesRepository>(),
+                    s.GetRequiredService<ILogger>()));
+                services.AddSingleton(s => new LibraryViewModel(
+                    s.GetRequiredService<FilesRepository>(),
+                    s.GetRequiredService<ILogger>()));
+                services.AddSingleton(s => new MainViewModel(
+                    s.GetRequiredService<SearchViewModel>(),
+                    s.GetRequiredService<InboxViewModel>(),
+                    s.GetRequiredService<LibraryViewModel>()));
+
+                services.AddSingleton(_activator);
+                services.AddSingleton(_hotKeyService);
                 services.AddSingleton<TrayService>();
                 services.AddSingleton<MainWindow>();
             })
             .Build();
+
+        _activator.ActivateRequested += (_, _) =>
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var tray = Services.GetRequiredService<TrayService>();
+                tray.ShowTab(MainTab.Search);
+            });
+        };
+
+        _hotKeyService.HotKeyPressed += (_, _) =>
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var tray = Services.GetRequiredService<TrayService>();
+                tray.ShowTab(MainTab.Search);
+            });
+        };
+
+        _settingsService.SettingsChanged += (_, _) =>
+        {
+            var newSettings = _settingsService.Current;
+            LoggerSetup.SetVerbose(newSettings.LogLevelVerbose);
+            _settingsService.ApplyStartWithWindows(newSettings.StartWithWindows);
+
+            var hotKey = _hotKeyService.CurrentDescriptor;
+            if (hotKey.Modifiers != newSettings.HotKey.Modifiers || hotKey.Key != newSettings.HotKey.Key)
+            {
+                var result = _hotKeyService.ReRegister(newSettings.HotKey);
+                if (result != HotKeyRegistrationResult.Success)
+                {
+                    _logger.Warning("Failed to re-register hotkey after settings change: {Result}", result);
+                }
+            }
+        };
     }
 
     public IServiceProvider Services => _host.Services;
@@ -78,6 +142,15 @@ public sealed class AppBootstrapper : IDisposable
     {
         _logger.Information("Why Save starting up");
         _host.Start();
+
+        _activator.CreateListener();
+        var hotKeyResult = _hotKeyService.Register(_activator.HwndSource!, _settingsService.Current.HotKey);
+        if (hotKeyResult != HotKeyRegistrationResult.Success)
+        {
+            _logger.Warning("Could not register global hotkey on startup: {Result}", hotKeyResult);
+        }
+
+        _settingsService.ApplyStartWithWindows(_settingsService.Current.StartWithWindows);
 
         var watchService = Services.GetRequiredService<FileWatchService>();
         var pipeline = Services.GetRequiredService<DetectionPipeline>();
@@ -94,7 +167,9 @@ public sealed class AppBootstrapper : IDisposable
             });
         }
 
-        var watchedFolders = new[] { RescanService.GetDefaultDownloadsPath() };
+        var watchedFolders = _settingsService.Current.WatchedFolders.Any()
+            ? _settingsService.Current.WatchedFolders
+            : new List<string> { RescanService.GetDefaultDownloadsPath() };
         watchService.Start(watchedFolders);
 
         _ = Task.Run(async () =>
@@ -128,6 +203,9 @@ public sealed class AppBootstrapper : IDisposable
         _host.Dispose();
         _connection.Dispose();
         _keyStore.Dispose();
+        _activator.Dispose();
+        _hotKeyService.Dispose();
+        _settingsService.Dispose();
         Log.CloseAndFlush();
     }
 }

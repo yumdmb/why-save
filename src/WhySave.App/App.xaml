@@ -4,6 +4,8 @@
              xmlns:local="clr-namespace:WhySave.App"
              ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
-
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <local:StatusToBrushConverter x:Key="StatusToBrushConverter"/>
     </Application.Resources>
 </Application>

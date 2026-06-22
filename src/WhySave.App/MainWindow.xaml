@@ -3,10 +3,89 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WhySave.App"
+        xmlns:vm="clr-namespace:WhySave.App.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Why Save" Height="600" Width="900"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <DataTemplate x:Key="FileRowTemplate" DataType="{x:Type vm:FileRowViewModel}">
+            <Border Padding="8,4" BorderThickness="0,0,0,1" BorderBrush="#FFE0E0E0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{Binding Filename}" FontWeight="SemiBold" FontSize="14"/>
+                        <TextBlock Text="{Binding SavedAtDisplay}" Foreground="Gray" FontSize="12"/>
+                        <TextBlock Text="{Binding Project}" Foreground="DimGray" FontSize="11"
+                                   Visibility="{Binding Project, Converter={StaticResource NullToVisibilityConverter}}"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Padding="6,2" Margin="8,0" CornerRadius="4"
+                            Background="{Binding Status, Converter={StaticResource StatusToBrushConverter}}">
+                        <TextBlock Text="{Binding StatusBadge}" FontSize="11" Foreground="White"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
     <Grid>
-
+        <TabControl SelectedIndex="{Binding SelectedTabIndex}">
+            <TabItem Header="Search">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0" Text="{Binding Search.Query, UpdateSourceTrigger=PropertyChanged}"
+                             FontSize="14" Padding="6" Margin="0,0,0,8"/>
+                    <Button Grid.Row="1" Content="Search" Command="{Binding Search.SearchCommand}"
+                            HorizontalAlignment="Left" Padding="16,4" Margin="0,0,0,8"/>
+                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="No results" Foreground="Gray" FontStyle="Italic"
+                                       Visibility="{Binding Search.HasSearched, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <ItemsControl ItemsSource="{Binding Search.Results}"
+                                          ItemTemplate="{StaticResource FileRowTemplate}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Inbox">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="{Binding Inbox.PendingCount, StringFormat='{}{0} files need context'}"
+                               FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Content="Dismiss to legacy" Command="{Binding Inbox.DismissSelectedToLegacyCommand}" Margin="0,0,8,0" Padding="12,4"/>
+                        <Button Content="Delete record" Command="{Binding Inbox.DeleteSelectedCommand}" Padding="12,4"/>
+                    </StackPanel>
+                    <ListView x:Name="InboxListView" Grid.Row="2" ItemsSource="{Binding Inbox.Items}"
+                              SelectionMode="Extended"
+                              ItemTemplate="{StaticResource FileRowTemplate}"
+                              SelectionChanged="InboxListView_SelectionChanged"
+                              BorderThickness="1" BorderBrush="#FFD0D0D0"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Library">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0" Text="{Binding Library.BrowseFilter, UpdateSourceTrigger=PropertyChanged}"
+                             Padding="6" Margin="0,0,0,8" ToolTip="Filter by filename"/>
+                    <ListView Grid.Row="1" ItemsSource="{Binding Library.Items}"
+                              ItemTemplate="{StaticResource FileRowTemplate}"
+                              BorderThickness="1" BorderBrush="#FFD0D0D0"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

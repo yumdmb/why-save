@@ -64,6 +64,11 @@ public class FilesRepository
             record);
     }
 
+    public void Delete(string id)
+    {
+        _connection.Execute("DELETE FROM files WHERE id = @id", new { id });
+    }
+
     public void MarkMissing(string id)
     {
         _connection.Execute(
