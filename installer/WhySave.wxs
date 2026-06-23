@@ -4,7 +4,7 @@
   Installs to %LOCALAPPDATA%\Programs\WhySave\ with no UAC prompt.
   Writes the per-user HKCU Run registry entry for start-with-Windows.
   Build with: wix build WhySave.wxs -o WhySave.msi
-  (Requires WiX v4+: https://wixtoolset.org/)
+  (Requires WiX v4: dotnet tool install --global wix --version 4.*)
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Package
