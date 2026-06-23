@@ -41,7 +41,7 @@ if (-not $wixExe) {
     exit 1
 }
 
-wix build $wxsFile -o $msiOutput --define "BuildDir=$publishDir"
+wix build $wxsFile -o $msiOutput -d "BuildDir=$publishDir" -ext WixToolset.UI.wixext
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "MSI build failed with exit code $LASTEXITCODE"
