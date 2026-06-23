@@ -61,9 +61,12 @@ jobs:
         run: dotnet test WhySave.sln --no-build -c Release --verbosity normal
 
       - name: Install WiX
+        shell: pwsh
         run: |
           dotnet tool install --global wix --version 4.*
-          wix extension add -g WixToolset.UI.wixext
+          $wixVersion = (wix --version).Split('+')[0].Trim()
+          Write-Host "WiX tool version: $wixVersion"
+          wix extension add -g "WixToolset.UI.wixext/$wixVersion"
 
       - name: Build MSI
         shell: pwsh
