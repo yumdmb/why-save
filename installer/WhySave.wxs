@@ -6,10 +6,12 @@
   Build with: wix build WhySave.wxs -o WhySave.msi
   Requires WiX v4 (see build-msi.ps1 for the install command).
 -->
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package
     Name="Why Save"
     Manufacturer="Why Save"
+    UpgradeCode="{3DE76B5D-E4DF-4F0D-A84E-DDEFAA977010}"
     Version="1.0.0"
     Language="1033"
     Codepage="1252"
@@ -21,16 +23,15 @@
     <Property Id="ApplicationFolderName" Value="WhySave" />
     <Property Id="WixAppFolder" Value="WixPerUserFolder" />
 
+    <Icon Id="AppIcon.ico" SourceFile="$(var.BuildDir)\WhySave.App.exe" />
+
     <Feature Id="MainFeature" Title="Why Save" Level="1">
       <ComponentGroupRef Id="AppFiles" />
       <ComponentRef Id="RegistryEntry" />
       <ComponentRef Id="ShortcutComponent" />
     </Feature>
 
-    <UI>
-      <UIRef Id="WixUI_InstallDir" />
-      <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
-    </UI>
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
 
     <Property Id="INSTALLFOLDER" Value="[%LOCALAPPDATA]\Programs\WhySave" />
   </Package>
@@ -74,5 +75,4 @@
     </Component>
   </Fragment>
 
-  <Icon Id="AppIcon.ico" SourceFile="$(var.BuildDir)\WhySave.App.exe" />
 </Wix>
