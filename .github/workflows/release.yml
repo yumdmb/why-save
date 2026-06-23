@@ -61,7 +61,7 @@ jobs:
         run: dotnet test WhySave.sln --no-build -c Release --verbosity normal
 
       - name: Install WiX
-        run: dotnet tool install --global wix
+        run: dotnet tool install --global wix --version 4.*
 
       - name: Build MSI
         shell: pwsh

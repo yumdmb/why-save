@@ -1,7 +1,7 @@
 # Build script for the Why Save MSI installer.
 # Prerequisites:
 #   - .NET 8 SDK
-#   - WiX v4+ (dotnet tool install --global wix)
+#   - WiX v4 (dotnet tool install --global wix --version 4.*)
 #
 # Usage: powershell -ExecutionPolicy Bypass -File build-msi.ps1
 
@@ -37,7 +37,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "Building MSI with WiX..." -ForegroundColor Cyan
 $wixExe = Get-Command wix -ErrorAction SilentlyContinue
 if (-not $wixExe) {
-    Write-Error "WiX not found. Install with: dotnet tool install --global wix"
+    Write-Error "WiX not found. Install with: dotnet tool install --global wix --version 4.*"
     exit 1
 }
 

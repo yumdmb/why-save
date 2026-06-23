@@ -79,7 +79,7 @@ dotnet publish src\WhySave.App\WhySave.App.csproj -c Release -r win-x64 --self-c
 ### Building the MSI
 
 ```powershell
-# Requires WiX v4+: dotnet tool install --global wix
+# Requires WiX v4: dotnet tool install --global wix --version 4.*
 powershell -ExecutionPolicy Bypass -File installer\build-msi.ps1
 ```
 
