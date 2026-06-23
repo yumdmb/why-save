@@ -42,12 +42,13 @@ jobs:
           $xml.Save($csprojPath)
           Write-Host "Updated csproj: Version=$version, AssemblyVersion=$version.0"
 
-          # Update wxs
+          # Update wxs Package Version only (case-sensitive, word-boundary anchored
+          # so the XML declaration's version="1.0" and InstallerVersion="500" survive).
           $wxsPath = 'installer\WhySave.wxs'
           $content = Get-Content $wxsPath -Raw
-          $content = $content -replace 'Version="[^"]*"', "Version=`"$version`""
+          $content = $content -creplace '\bVersion="[^"]*"', "Version=`"$version`""
           Set-Content $wxsPath -Value $content -NoNewline
-          Write-Host "Updated wxs: Version=$version"
+          Write-Host "Updated wxs: Package Version=$version"
 
           "version=$version" >> $env:GITHUB_OUTPUT
 
