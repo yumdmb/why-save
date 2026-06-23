@@ -42,7 +42,6 @@ public partial class App : Application
 
         if (_bootstrapper is not null)
         {
-            _bootstrapper.Stop();
             _bootstrapper.Dispose();
         }
 

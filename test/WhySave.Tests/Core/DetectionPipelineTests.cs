@@ -177,4 +177,41 @@ public class DetectionPipelineTests : StorageTestBase, IDisposable
         Assert.NotNull(record);
         Assert.Equal(record!.Id, detectedFileId);
     }
+
+    [Fact]
+    public void Stop_Does_Not_Deadlock_When_Started_On_A_Synchronization_Context()
+    {
+        Exception? shutdownException = null;
+        var shutdownThread = new Thread(() =>
+        {
+            try
+            {
+                SynchronizationContext.SetSynchronizationContext(new NonPumpingSynchronizationContext());
+                _pipeline.Start();
+#pragma warning disable xUnit1031 // This test intentionally exercises the app's synchronous WPF shutdown path.
+                _pipeline.StopAsync().GetAwaiter().GetResult();
+#pragma warning restore xUnit1031
+            }
+            catch (Exception ex)
+            {
+                shutdownException = ex;
+            }
+        })
+        {
+            IsBackground = true,
+        };
+
+        shutdownThread.Start();
+
+        Assert.True(shutdownThread.Join(TimeSpan.FromSeconds(2)), "Pipeline shutdown deadlocked.");
+        Assert.Null(shutdownException);
+    }
+
+    private sealed class NonPumpingSynchronizationContext : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback d, object? state)
+        {
+            // Models a UI thread that is blocked in synchronous shutdown and cannot pump callbacks.
+        }
+    }
 }

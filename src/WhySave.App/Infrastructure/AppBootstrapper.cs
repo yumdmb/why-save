@@ -25,6 +25,8 @@ public sealed class AppBootstrapper : IDisposable
     private readonly SettingsService _settingsService;
     private UpdateService? _updateService;
     private Timer? _hourlyRescanTimer;
+    private bool _stopped;
+    private bool _disposed;
 
     public AppBootstrapper()
     {
@@ -240,6 +242,10 @@ public sealed class AppBootstrapper : IDisposable
 
     public void Stop()
     {
+        if (_stopped)
+            return;
+
+        _stopped = true;
         _logger.Information("Why Save shutting down");
         Services.GetRequiredService<DetectionPipeline>().StopAsync().GetAwaiter().GetResult();
         Services.GetRequiredService<FileWatchService>().Dispose();
@@ -252,6 +258,10 @@ public sealed class AppBootstrapper : IDisposable
 
     public void Dispose()
     {
+        if (_disposed)
+            return;
+
+        _disposed = true;
         Stop();
         _host.Dispose();
         _connection.Dispose();

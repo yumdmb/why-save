@@ -50,15 +50,15 @@ public sealed class DetectionPipeline : IDisposable
     public void Start(CancellationToken externalCt = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        _consumeTask = ConsumeLoopAsync(externalCt);
+        _consumeTask = Task.Run(() => ConsumeLoopAsync(externalCt));
     }
 
     public async Task StopAsync()
     {
-        _channel.Writer.Complete();
+        _channel.Writer.TryComplete();
         _cts.Cancel();
         if (_consumeTask is not null)
-            try { await _consumeTask; } catch (OperationCanceledException) { }
+            try { await _consumeTask.ConfigureAwait(false); } catch (OperationCanceledException) { }
     }
 
     private async Task ConsumeLoopAsync(CancellationToken externalCt)
@@ -66,7 +66,7 @@ public sealed class DetectionPipeline : IDisposable
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token, externalCt);
         var ct = linked.Token;
 
-        await foreach (var evt in _channel.Reader.ReadAllAsync(ct))
+        await foreach (var evt in _channel.Reader.ReadAllAsync(ct).ConfigureAwait(false))
         {
             try
             {
@@ -263,7 +263,7 @@ public sealed class DetectionPipeline : IDisposable
         if (_disposed) return;
         _disposed = true;
         _cts.Cancel();
-        _channel.Writer.Complete();
+        _channel.Writer.TryComplete();
         _cts.Dispose();
     }
 
