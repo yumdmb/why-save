@@ -30,7 +30,7 @@ public sealed class UpdateCheckResult
 
 public sealed class UpdateService : IDisposable
 {
-    public const string FeedUrl = "https://releases.whysave.app/feed.json";
+    public const string FeedUrl = "https://github.com/yumdmb/why-save/releases/latest/download/feed.json";
     public static readonly TimeSpan CheckInterval = TimeSpan.FromHours(24);
 
     private readonly SettingsService _settingsService;

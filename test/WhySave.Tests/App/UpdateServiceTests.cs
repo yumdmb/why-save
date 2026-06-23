@@ -56,7 +56,7 @@ public class UpdateServiceTests : IDisposable
         var json = """
             {
                 "version": "1.0.1",
-                "url": "https://releases.whysave.app/WhySave-1.0.1.exe",
+                "url": "https://github.com/yumdmb/why-save/releases/download/v1.0.1/WhySave.msi",
                 "sha256": "abc123def456"
             }
             """;
@@ -65,7 +65,7 @@ public class UpdateServiceTests : IDisposable
 
         Assert.NotNull(feed);
         Assert.Equal("1.0.1", feed!.Version);
-        Assert.Equal("https://releases.whysave.app/WhySave-1.0.1.exe", feed.Url);
+        Assert.Equal("https://github.com/yumdmb/why-save/releases/download/v1.0.1/WhySave.msi", feed.Url);
         Assert.Equal("abc123def456", feed.Sha256);
     }
 

@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: windows-latest
+    name: Build MSI & Create Release
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+          cache: true
+
+      - name: Set version from tag
+        id: set-version
+        shell: pwsh
+        run: |
+          $tag = '${{ github.ref_name }}'
+          $version = $tag -replace '^v', ''
+          if (-not $version) { Write-Error "Could not parse version from tag: $tag"; exit 1 }
+
+          Write-Host "Tag: $tag -> Version: $version"
+
+          # Update csproj
+          $csprojPath = 'src\WhySave.App\WhySave.App.csproj'
+          $xml = [xml](Get-Content $csprojPath)
+          $xml.Project.PropertyGroup.Version = $version
+          $xml.Project.PropertyGroup.AssemblyVersion = "$version.0"
+          $xml.Project.PropertyGroup.FileVersion = "$version.0"
+          $xml.Save($csprojPath)
+          Write-Host "Updated csproj: Version=$version, AssemblyVersion=$version.0"
+
+          # Update wxs
+          $wxsPath = 'installer\WhySave.wxs'
+          $content = Get-Content $wxsPath -Raw
+          $content = $content -replace 'Version="[^"]*"', "Version=`"$version`""
+          Set-Content $wxsPath -Value $content -NoNewline
+          Write-Host "Updated wxs: Version=$version"
+
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Restore
+        run: dotnet restore WhySave.sln
+
+      - name: Build
+        run: dotnet build WhySave.sln --no-restore -c Release
+
+      - name: Test
+        run: dotnet test WhySave.sln --no-build -c Release --verbosity normal
+
+      - name: Install WiX
+        run: dotnet tool install --global wix
+
+      - name: Build MSI
+        shell: pwsh
+        run: .\installer\build-msi.ps1
+
+      - name: Generate feed.json
+        shell: pwsh
+        run: |
+          $msiPath = 'installer\WhySave.msi'
+          if (-not (Test-Path $msiPath)) { Write-Error "MSI not found at $msiPath"; exit 1 }
+
+          $hash = (Get-FileHash $msiPath -Algorithm SHA256).Hash.ToLower()
+          $version = '${{ steps.set-version.outputs.version }}'
+          $repo = '${{ github.repository }}'
+          $tag = '${{ github.ref_name }}'
+          $url = "https://github.com/$repo/releases/download/$tag/WhySave.msi"
+
+          @{
+            version = $version
+            url     = $url
+            sha256  = $hash
+          } | ConvertTo-Json -Compress | Set-Content -Path feed.json -NoNewline
+
+          Write-Host "SHA256: $hash"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          files: |
+            installer\WhySave.msi
+            feed.json
+          generate_release_notes: true
+          make_latest: true

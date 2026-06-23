@@ -47,7 +47,7 @@ Alternatively, download the self-contained `WhySave.App.exe`, place it anywhere,
 - `reason` and `notes` fields are encrypted at rest with AES-GCM. The encryption key is sealed with Windows DPAPI (CurrentUser scope) — only your Windows user can decrypt it.
 - Metadata (filename, path, project, URL, dates, status) is stored in plaintext for search.
 - Logs intentionally exclude decrypted reason text and full URL strings. Only filenames, paths, statuses, and event kinds are logged.
-- The only outbound request is the opt-in auto-update feed check (HTTPS GET to `releases.whysave.app/feed.json`), which sends no data beyond the version query. Default is OFF.
+- The only outbound request is the opt-in auto-update feed check (HTTPS GET to the latest GitHub Release's `feed.json`), which sends no data beyond the version query. Default is OFF.
 
 ## Architecture
 
