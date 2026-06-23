@@ -32,8 +32,6 @@
     </Feature>
 
     <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
-
-    <Property Id="INSTALLFOLDER" Value="[%LOCALAPPDATA]\Programs\WhySave" />
   </Package>
 
   <Fragment>
