@@ -6,6 +6,7 @@
         xmlns:vm="clr-namespace:WhySave.App.ViewModels"
         mc:Ignorable="d"
         Title="Why Save" Height="600" Width="900"
+        Icon="Assets/WhySave.ico"
         WindowStartupLocation="CenterScreen"
         ShowInTaskbar="False"
         Visibility="Hidden"

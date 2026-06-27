@@ -26,7 +26,7 @@
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
     <Property Id="WixShellExecTarget" Value="[#WhySaveExe]" />
 
-    <Icon Id="AppIcon.ico" SourceFile="$(var.BuildDir)\WhySave.App.exe" />
+    <Icon Id="AppIcon.ico" SourceFile="$(sys.SOURCEFILEDIR)..\src\WhySave.App\Assets\WhySave.ico" />
     <CustomAction Id="LaunchApplication"
                   BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"
                   DllEntry="WixShellExec"

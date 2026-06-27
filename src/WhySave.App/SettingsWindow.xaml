@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Settings" Height="680" Width="560"
+        Icon="Assets/WhySave.ico"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
         MinHeight="560" MinWidth="480">

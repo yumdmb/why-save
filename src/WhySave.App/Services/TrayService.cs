@@ -1,6 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using H.NotifyIcon;
 using Serilog;
@@ -12,6 +12,8 @@ namespace WhySave.App.Services;
 
 public sealed class TrayService : IDisposable
 {
+    private static readonly Uri TrayIconUri = new("pack://application:,,,/Assets/WhySave.ico", UriKind.Absolute);
+
     private readonly MainWindow _mainWindow;
     private readonly FilesRepository _filesRepository;
     private readonly FileWatchService _fileWatchService;
@@ -50,13 +52,7 @@ public sealed class TrayService : IDisposable
         _trayIcon = new TaskbarIcon
         {
             ToolTipText = "Why Save",
-            IconSource = new GeneratedIconSource
-            {
-                Text = "Y",
-                Foreground = Brushes.White,
-                Background = Brushes.SteelBlue,
-                FontSize = 16,
-            },
+            IconSource = BitmapFrame.Create(TrayIconUri),
             Visibility = Visibility.Visible,
         };
 
