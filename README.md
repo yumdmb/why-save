@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/assets/banner.png" alt="Why Save - Capture the why behind every downloaded file." width="100%">
+</p>
+
 # Why Save
 
 We download files and forget why. Months later a file surfaces and its purpose is gone. **Why Save** closes that gap: a local-first Windows tray app that watches your Downloads folder, gently asks "why did you save this?" at the moment it happens, stores the answer encrypted in a local SQLite database, and lets you search it months later.
@@ -7,6 +11,8 @@ We download files and forget why. Months later a file surfaces and its purpose i
 1. Download `WhySave.msi` from the releases page.
 2. Double-click to install — no admin/UAC prompt required (per-user install to `%LOCALAPPDATA%\Programs\WhySave\`).
 3. Why Save starts automatically on next login and appears in your system tray.
+
+> **Windows warning:** The MSI may show a Windows SmartScreen or antivirus-style warning because the installer is not code-signed yet. If you downloaded it from the official Why Save releases page, choose **More info** → **Run anyway** to continue.
 
 Alternatively, download the self-contained `WhySave.App.exe`, place it anywhere, and run it directly.
 
@@ -82,7 +88,7 @@ dotnet publish src\WhySave.App\WhySave.App.csproj -c Release -r win-x64 --self-c
 powershell -ExecutionPolicy Bypass -File installer\build-msi.ps1
 ```
 
-## v1.1 Roadmap
+## v2.0 Roadmap
 
 - Browser extension for automatic source-URL capture (the ingestion seam `IFileIngester.IngestAsync` is designed for this — the extension calls it via a loopback HTTP listener with `Source = "extension"` and a real URL, no storage or pipeline changes needed)
 - Shell right-click "Why did I save this?"
@@ -101,6 +107,11 @@ powershell -ExecutionPolicy Bypass -File installer\build-msi.ps1
 - In-app WPF notification windows (reliable in-process prompts)
 - Serilog (rolling file logs)
 
+## Community Standards
+
+- [Contributing](CONTRIBUTING.md)
+- [License](LICENSE)
+
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).
