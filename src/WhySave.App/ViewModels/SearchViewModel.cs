@@ -17,13 +17,16 @@ public partial class SearchViewModel : ObservableObject
     private readonly ILogger _logger;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(EmptyMessage))]
     private string _query = "";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsEmpty))]
     private IReadOnlyList<FileRowViewModel> _results = Array.Empty<FileRowViewModel>();
 
     [ObservableProperty]
-    private bool _hasSearched;
+    [NotifyPropertyChangedFor(nameof(IsEmpty))]
+    private bool _hasLoaded;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsEmpty))]
@@ -41,43 +44,40 @@ public partial class SearchViewModel : ObservableObject
         _logger = logger;
     }
 
-    public bool IsEmpty => HasSearched && !IsSearching && Results.Count == 0;
+    public bool IsEmpty => HasLoaded && !IsSearching && Results.Count == 0;
+
+    public string EmptyMessage => string.IsNullOrWhiteSpace(Query)
+        ? "No saved files yet. Files you add context to or import into Why Save will appear here."
+        : "No results. Try a different keyword from the filename, project, URL, reason, or notes.";
+
+    public Task RefreshAsync()
+    {
+        return string.IsNullOrWhiteSpace(Query)
+            ? LoadBrowseResultsAsync()
+            : SearchAsync();
+    }
 
     [RelayCommand]
     private async Task SearchAsync()
     {
-        HasSearched = true;
-        IsSearching = true;
-
         if (string.IsNullOrWhiteSpace(Query))
         {
-            Results = Array.Empty<FileRowViewModel>();
-            IsSearching = false;
+            await LoadBrowseResultsAsync();
             return;
         }
 
+        HasLoaded = true;
+        IsSearching = true;
+
         try
         {
-            _logger.Information("Search executed for query");
+            _logger.Information("Find search executed for query");
             var results = await _searchService.SearchAsync(Query);
-            Results = results.Select(r => new FileRowViewModel(new Storage.Models.FileRecord
-            {
-                Id = r.FileId,
-                Path = r.Path,
-                Filename = r.Filename,
-                Project = r.Project,
-                Status = r.Status,
-                SavedAt = r.SavedAt?.ToUnixTimeMilliseconds(),
-                Reason = r.ReasonSnippet,
-            })
-            {
-                OpenCommand = OpenFileCommand,
-                EditContextCommand = EditContextCommand,
-            }).ToList();
+            Results = ToRows(results);
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "Search failed");
+            _logger.Error(ex, "Find search failed");
             Results = Array.Empty<FileRowViewModel>();
         }
         finally
@@ -115,5 +115,45 @@ public partial class SearchViewModel : ObservableObject
         if (row is null) return;
         _logger.Information("Edit context requested from search: {FileId}", row.Id);
         _dialogService.ShowAddContext(row.Id);
+    }
+
+    private async Task LoadBrowseResultsAsync()
+    {
+        HasLoaded = true;
+        IsSearching = true;
+
+        try
+        {
+            _logger.Information("Find browse loaded");
+            var results = await _searchService.BrowseAsync();
+            Results = ToRows(results);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Find browse failed");
+            Results = Array.Empty<FileRowViewModel>();
+        }
+        finally
+        {
+            IsSearching = false;
+        }
+    }
+
+    private IReadOnlyList<FileRowViewModel> ToRows(IEnumerable<SearchResult> results)
+    {
+        return results.Select(r => new FileRowViewModel(new Storage.Models.FileRecord
+        {
+            Id = r.FileId,
+            Path = r.Path,
+            Filename = r.Filename,
+            Project = r.Project,
+            Status = r.Status,
+            SavedAt = r.SavedAt?.ToUnixTimeMilliseconds(),
+            Reason = r.ReasonSnippet,
+        })
+        {
+            OpenCommand = OpenFileCommand,
+            EditContextCommand = EditContextCommand,
+        }).ToList();
     }
 }

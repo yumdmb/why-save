@@ -5,9 +5,8 @@ namespace WhySave.App.ViewModels;
 
 public enum MainTab
 {
-    Search,
+    Find,
     Inbox,
-    Library,
 }
 
 public partial class MainViewModel : ObservableObject
@@ -15,24 +14,22 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private int _selectedTabIndex;
 
-    public SearchViewModel Search { get; }
+    public SearchViewModel Find { get; }
     public InboxViewModel Inbox { get; }
-    public LibraryViewModel Library { get; }
 
-    public MainViewModel(SearchViewModel search, InboxViewModel inbox, LibraryViewModel library)
+    public MainViewModel(SearchViewModel find, InboxViewModel inbox)
     {
-        Search = search;
+        Find = find;
         Inbox = inbox;
-        Library = library;
     }
 
     public void SelectTab(MainTab tab)
     {
         SelectedTabIndex = (int)tab;
-        if (tab == MainTab.Inbox)
+        if (tab == MainTab.Find)
+            _ = Find.RefreshAsync();
+        else if (tab == MainTab.Inbox)
             Inbox.Refresh();
-        else if (tab == MainTab.Library)
-            Library.Refresh();
     }
 
     [RelayCommand]
@@ -40,11 +37,11 @@ public partial class MainViewModel : ObservableObject
     {
         switch ((MainTab)SelectedTabIndex)
         {
+            case MainTab.Find:
+                _ = Find.RefreshAsync();
+                break;
             case MainTab.Inbox:
                 Inbox.Refresh();
-                break;
-            case MainTab.Library:
-                Library.Refresh();
                 break;
         }
     }

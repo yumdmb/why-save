@@ -62,21 +62,17 @@ public sealed class TrayService : IDisposable
 
         _trayIcon.ForceCreate();
 
-        _trayIcon.TrayLeftMouseDown += (_, _) => ShowTab(MainTab.Search);
+        _trayIcon.TrayLeftMouseDown += (_, _) => ShowTab(MainTab.Find);
 
         var menu = new ContextMenu();
 
-        var searchItem = new MenuItem { Header = "Search" };
-        searchItem.Click += (_, _) => ShowTab(MainTab.Search);
-        menu.Items.Add(searchItem);
+        var findItem = new MenuItem { Header = "Find" };
+        findItem.Click += (_, _) => ShowTab(MainTab.Find);
+        menu.Items.Add(findItem);
 
         _inboxMenuItem = new MenuItem { Header = "Memory Inbox" };
         _inboxMenuItem.Click += (_, _) => ShowTab(MainTab.Inbox);
         menu.Items.Add(_inboxMenuItem);
-
-        var libraryItem = new MenuItem { Header = "Library" };
-        libraryItem.Click += (_, _) => ShowTab(MainTab.Library);
-        menu.Items.Add(libraryItem);
 
         menu.Items.Add(new Separator());
 

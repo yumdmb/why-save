@@ -19,6 +19,18 @@ public sealed class SearchService
         _filesRepository = filesRepository;
     }
 
+    public Task<IReadOnlyList<SearchResult>> BrowseAsync(int limit = DefaultLimit, CancellationToken cancellationToken = default)
+    {
+        return Task.Run<IReadOnlyList<SearchResult>>(() =>
+        {
+            return _filesRepository.ListAll()
+                .Where(IsFindDefaultRecord)
+                .Take(limit)
+                .Select(ToSearchResult)
+                .ToList();
+        }, cancellationToken);
+    }
+
     public Task<IReadOnlyList<SearchResult>> SearchAsync(string rawQuery, CancellationToken cancellationToken = default)
     {
         return Task.Run<IReadOnlyList<SearchResult>>(() =>
@@ -28,9 +40,19 @@ public sealed class SearchService
 
             var (reasonTerm, ftsQuery) = ParseQuery(rawQuery);
 
-            IEnumerable<FileRecord> candidates = string.IsNullOrWhiteSpace(ftsQuery)
-                ? _filesRepository.ListAll().Take(DefaultLimit)
-                : _filesRepository.SearchFts(ftsQuery, DefaultLimit);
+            IEnumerable<FileRecord> candidates;
+            if (string.IsNullOrWhiteSpace(ftsQuery))
+            {
+                candidates = _filesRepository.ListAll().Take(DefaultLimit);
+            }
+            else
+            {
+                candidates = MergeCandidates(
+                    _filesRepository.SearchFts(ftsQuery, DefaultLimit),
+                    string.IsNullOrEmpty(reasonTerm)
+                        ? _filesRepository.ListAll().Where(r => MatchesContextFields(r, ftsQuery))
+                        : []);
+            }
 
             if (!string.IsNullOrEmpty(reasonTerm))
             {
@@ -40,10 +62,51 @@ public sealed class SearchService
             }
 
             return candidates
+                .Take(DefaultLimit)
                 .Select(ToSearchResult)
                 .ToList();
         }, cancellationToken);
     }
+
+    private static IEnumerable<FileRecord> MergeCandidates(
+        IEnumerable<FileRecord> rankedCandidates,
+        IEnumerable<FileRecord> fallbackCandidates)
+    {
+        var seen = new HashSet<string>();
+        foreach (var record in rankedCandidates)
+        {
+            if (seen.Add(record.Id))
+                yield return record;
+        }
+
+        foreach (var record in fallbackCandidates
+            .OrderByDescending(r => r.SavedAt ?? r.FirstSeenAt)
+            .ThenBy(r => r.Filename))
+        {
+            if (seen.Add(record.Id))
+                yield return record;
+        }
+    }
+
+    private static bool MatchesContextFields(FileRecord record, string query)
+    {
+        return TextMatches(record.Reason, query) || TextMatches(record.Notes, query);
+    }
+
+    private static bool TextMatches(string? text, string query)
+    {
+        if (string.IsNullOrWhiteSpace(text) || string.IsNullOrWhiteSpace(query))
+            return false;
+
+        if (text.Contains(query, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        var terms = query.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return terms.Length > 1 && terms.All(t => text.Contains(t, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsFindDefaultRecord(FileRecord record) =>
+        record.Status is "contexted" or "legacy";
 
     internal static (string? ReasonTerm, string FtsQuery) ParseQuery(string query)
     {
@@ -83,8 +146,8 @@ public sealed class SearchService
     internal static string StatusBadgeFor(string status) => status switch
     {
         "pending" => "Pending",
-        "contexted" => "Contexted",
-        "legacy" => "Legacy",
+        "contexted" => "Has context",
+        "legacy" => "Imported",
         "missing" => "Missing",
         _ => status,
     };

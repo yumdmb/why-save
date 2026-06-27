@@ -151,9 +151,52 @@ public class SearchServiceTests : IDisposable
         Assert.Equal("AI_Paper.pdf", r.Filename);
         Assert.Equal("/p/AI_Paper.pdf", r.Path);
         Assert.Equal("ML-course", r.Project);
-        Assert.Equal("Contexted", r.StatusBadge);
+        Assert.Equal("Has context", r.StatusBadge);
         Assert.NotNull(r.SavedAt);
         Assert.NotNull(r.ReasonSnippet);
+    }
+
+    [Fact]
+    public async Task Browse_Returns_Contexted_And_Legacy_Records()
+    {
+        _repo.Insert(NewRecord("b1", "/p/contexted.pdf", "contexted.pdf",
+            status: "contexted", reason: "For tax review"));
+        _repo.Insert(NewRecord("b2", "/p/imported.pdf", "imported.pdf",
+            status: "legacy"));
+        _repo.Insert(NewRecord("b3", "/p/pending.pdf", "pending.pdf",
+            status: "pending"));
+
+        var results = await _searchService.BrowseAsync();
+
+        Assert.Equal(["b1", "b2"], results.Select(r => r.FileId));
+        Assert.Contains(results, r => r.FileId == "b1" && r.ReasonSnippet == "For tax review");
+    }
+
+    [Fact]
+    public async Task Keyword_Matches_Reason_By_Default()
+    {
+        _repo.Insert(NewRecord("r1", "/p/random.pdf", "random.pdf",
+            reason: "Saved for the transformers lecture"));
+        _repo.Insert(NewRecord("r2", "/p/other.pdf", "other.pdf",
+            reason: "Saved for another class"));
+
+        var results = await _searchService.SearchAsync("transformers");
+
+        Assert.Single(results);
+        Assert.Equal("r1", results[0].FileId);
+    }
+
+    [Fact]
+    public async Task Keyword_Matches_Notes_By_Default()
+    {
+        var record = NewRecord("n1", "/p/random.pdf", "random.pdf");
+        record.Notes = "Covers the Q3 budget assumptions";
+        _repo.Insert(record);
+
+        var results = await _searchService.SearchAsync("budget assumptions");
+
+        Assert.Single(results);
+        Assert.Equal("n1", results[0].FileId);
     }
 
     [Fact]
