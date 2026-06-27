@@ -178,7 +178,6 @@ public sealed class AppBootstrapper : IDisposable
         _settingsService.ApplyStartWithWindows(_settingsService.Current.StartWithWindows);
 
         _updateService = Services.GetRequiredService<UpdateService>();
-        _updateService.CheckAndApplyStagedUpdate();
         _updateService.Start();
 
         var watchService = Services.GetRequiredService<FileWatchService>();

@@ -28,8 +28,12 @@ jobs:
         shell: pwsh
         run: |
           $tag = '${{ github.ref_name }}'
+          if ($tag -notmatch '^v\d+\.\d+\.\d+$') {
+            Write-Error "Invalid release tag '$tag'. Use format v1.2.3"
+            exit 1
+          }
+
           $version = $tag -replace '^v', ''
-          if (-not $version) { Write-Error "Could not parse version from tag: $tag"; exit 1 }
 
           Write-Host "Tag: $tag -> Version: $version"
 

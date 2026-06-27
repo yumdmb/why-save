@@ -26,8 +26,8 @@ Run these steps on a clean Windows 10/11 user account with no prior Why Save ins
 - [ ] Set auto-update to "stable" in Settings
 - [ ] Stage a newer build at the feed URL with a higher version number
 - [ ] On next launch (or within 24h), the update is detected
-- [ ] Download completes and `WhySave.App.exe.new` appears in install dir
-- [ ] On app exit, the updater stub swaps the exe
+- [ ] Download completes and `%LOCALAPPDATA%\WhySave\updates\WhySave-update.msi` appears
+- [ ] On app exit, the updater stub runs the staged MSI silently
 - [ ] On next launch, the new version is running
 
 ## 21.3 Manual UI Checklist
