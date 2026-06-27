@@ -17,33 +17,44 @@
                        TextTrimming="CharacterEllipsis" Margin="0,0,0,18"/>
 
             <Label Content="Reason" Padding="0,0,0,2"/>
-            <TextBox Text="{Binding Reason}" TextWrapping="Wrap"
+            <TextBox x:Name="ReasonTextBox"
+                     Text="{Binding Reason, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     TextWrapping="Wrap"
                      AcceptsReturn="True" Height="80"
                      VerticalScrollBarVisibility="Auto"
                      Margin="0,0,0,14"/>
 
             <Label Content="Project" Padding="0,0,0,2"/>
-            <ComboBox IsEditable="True"
+            <ComboBox x:Name="ProjectComboBox"
+                      IsEditable="True"
                       ItemsSource="{Binding RecentProjects}"
-                      Text="{Binding Project, UpdateSourceTrigger=PropertyChanged}"
+                      Text="{Binding Project, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       Margin="0,0,0,14"/>
 
             <Label Content="Source URL" Padding="0,0,0,2"/>
-            <TextBox Text="{Binding SourceUrl}" Margin="0,0,0,14"/>
+            <TextBox x:Name="SourceUrlTextBox"
+                     Text="{Binding SourceUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,0,14"/>
 
             <Label Content="Notes" Padding="0,0,0,2"/>
-            <TextBox Text="{Binding Notes}" TextWrapping="Wrap"
+            <TextBox x:Name="NotesTextBox"
+                     Text="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     TextWrapping="Wrap"
                      AcceptsReturn="True" Height="80"
                      VerticalScrollBarVisibility="Auto"
                      Margin="0,0,0,14"/>
 
             <Label Content="Saved date" Padding="0,0,0,2"/>
-            <DatePicker SelectedDate="{Binding SavedDate}" Margin="0,0,0,20"/>
+            <DatePicker x:Name="SavedDatePicker"
+                        SelectedDate="{Binding SavedDate, Mode=TwoWay}"
+                        Margin="0,0,0,20"/>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="Cancel" Command="{Binding CancelCommand}"
                         Padding="18,5" Margin="0,0,10,0" IsCancel="True"/>
-                <Button Content="Save" Command="{Binding SaveCommand}"
+                <Button x:Name="SaveButton"
+                        Content="Save"
+                        Click="SaveButton_Click"
                         Padding="18,5" IsDefault="True"/>
             </StackPanel>
         </StackPanel>
