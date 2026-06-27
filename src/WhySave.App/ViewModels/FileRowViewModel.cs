@@ -51,8 +51,8 @@ public partial class FileRowViewModel : ObservableObject
     public string StatusBadge => Status switch
     {
         "pending" => "Pending",
-        "contexted" => "Contexted",
-        "legacy" => "Legacy",
+        "contexted" => "Has context",
+        "legacy" => "Imported",
         "missing" => "Missing",
         _ => Status,
     };

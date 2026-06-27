@@ -35,11 +35,11 @@ public partial class MainWindow : Window
 
         switch ((MainTab)vm.SelectedTabIndex)
         {
+            case MainTab.Find:
+                _ = vm.Find.RefreshAsync();
+                break;
             case MainTab.Inbox:
                 vm.Inbox.Refresh();
-                break;
-            case MainTab.Library:
-                vm.Library.Refresh();
                 break;
         }
     }

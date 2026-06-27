@@ -114,13 +114,9 @@ public sealed class AppBootstrapper : IDisposable
                     s.GetRequiredService<FilesRepository>(),
                     s.GetRequiredService<IAddContextDialogService>(),
                     s.GetRequiredService<ILogger>()));
-                services.AddSingleton(s => new LibraryViewModel(
-                    s.GetRequiredService<FilesRepository>(),
-                    s.GetRequiredService<ILogger>()));
                 services.AddSingleton(s => new MainViewModel(
                     s.GetRequiredService<SearchViewModel>(),
-                    s.GetRequiredService<InboxViewModel>(),
-                    s.GetRequiredService<LibraryViewModel>()));
+                    s.GetRequiredService<InboxViewModel>()));
 
                 services.AddSingleton(_activator);
                 services.AddSingleton(_hotKeyService);
@@ -134,7 +130,7 @@ public sealed class AppBootstrapper : IDisposable
             Application.Current.Dispatcher.Invoke(() =>
             {
                 var tray = Services.GetRequiredService<TrayService>();
-                tray.ShowTab(MainTab.Search);
+                tray.ShowTab(MainTab.Find);
             });
         };
 
@@ -143,7 +139,7 @@ public sealed class AppBootstrapper : IDisposable
             Application.Current.Dispatcher.Invoke(() =>
             {
                 var tray = Services.GetRequiredService<TrayService>();
-                tray.ShowTab(MainTab.Search);
+                tray.ShowTab(MainTab.Find);
             });
         };
 
@@ -182,7 +178,6 @@ public sealed class AppBootstrapper : IDisposable
         _settingsService.ApplyStartWithWindows(_settingsService.Current.StartWithWindows);
 
         _updateService = Services.GetRequiredService<UpdateService>();
-        _updateService.CheckAndApplyStagedUpdate();
         _updateService.Start();
 
         var watchService = Services.GetRequiredService<FileWatchService>();

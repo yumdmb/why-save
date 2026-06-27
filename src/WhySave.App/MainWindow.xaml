@@ -6,6 +6,7 @@
         xmlns:vm="clr-namespace:WhySave.App.ViewModels"
         mc:Ignorable="d"
         Title="Why Save" Height="600" Width="900"
+        Icon="Assets/WhySave.ico"
         WindowStartupLocation="CenterScreen"
         ShowInTaskbar="False"
         Visibility="Hidden"
@@ -74,27 +75,29 @@
     <Grid>
         <TabControl SelectedIndex="{Binding SelectedTabIndex}"
                     SelectionChanged="TabControl_SelectionChanged">
-            <TabItem Header="Search">
+            <TabItem Header="Find">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <TextBox Grid.Row="0" Text="{Binding Search.Query, UpdateSourceTrigger=PropertyChanged}"
-                             FontSize="14" Padding="6" Margin="0,0,0,8"/>
-                    <Button Grid.Row="1" Content="Search" Command="{Binding Search.SearchCommand}"
+                    <TextBox Grid.Row="0" Text="{Binding Find.Query, UpdateSourceTrigger=PropertyChanged}"
+                             FontSize="14" Padding="6" Margin="0,0,0,8"
+                             ToolTip="Find by filename, project, URL, reason, or notes"/>
+                    <Button Grid.Row="1" Content="Find" Command="{Binding Find.SearchCommand}"
                             HorizontalAlignment="Left" Padding="16,4" Margin="0,0,0,8"/>
                     <Grid Grid.Row="2">
                         <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                      Visibility="{Binding Search.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                            <ItemsControl ItemsSource="{Binding Search.Results}"
+                                      Visibility="{Binding Find.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                            <ItemsControl ItemsSource="{Binding Find.Results}"
                                           ItemTemplate="{StaticResource SearchResultTemplate}"/>
                         </ScrollViewer>
-                        <TextBlock Text="No results. Try a different keyword, or use reason:term to search the reason field."
+                        <TextBlock Text="{Binding Find.EmptyMessage}"
                                    Foreground="Gray" FontStyle="Italic" FontSize="13"
+                                   TextWrapping="Wrap"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
-                                   Visibility="{Binding Search.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                   Visibility="{Binding Find.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </Grid>
                 </Grid>
             </TabItem>
@@ -110,7 +113,7 @@
                                Visibility="{Binding Inbox.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8"
                                 Visibility="{Binding Inbox.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                        <Button Content="Dismiss to legacy" Command="{Binding Inbox.DismissSelectedToLegacyCommand}" Margin="0,0,8,0" Padding="12,4"/>
+                        <Button Content="Dismiss to imported" Command="{Binding Inbox.DismissSelectedToLegacyCommand}" Margin="0,0,8,0" Padding="12,4"/>
                         <Button Content="Delete record" Command="{Binding Inbox.DeleteSelectedCommand}" Padding="12,4"/>
                     </StackPanel>
                     <ListView x:Name="InboxListView" Grid.Row="2" ItemsSource="{Binding Inbox.Items}"
@@ -123,24 +126,6 @@
                                Foreground="Gray" FontStyle="Italic" FontSize="14"
                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                Visibility="{Binding Inbox.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                </Grid>
-            </TabItem>
-            <TabItem Header="Library">
-                <Grid Margin="12">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <TextBox Grid.Row="0" Text="{Binding Library.BrowseFilter, UpdateSourceTrigger=PropertyChanged}"
-                             Padding="6" Margin="0,0,0,8" ToolTip="Filter by filename"/>
-                    <ListView Grid.Row="1" ItemsSource="{Binding Library.Items}"
-                              ItemTemplate="{StaticResource FileRowTemplate}"
-                              BorderThickness="1" BorderBrush="#FFD0D0D0"
-                              Visibility="{Binding Library.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
-                    <TextBlock Grid.Row="1" Text="No files in your library yet. Files you dismiss from the Inbox or add context to will appear here."
-                               Foreground="Gray" FontStyle="Italic" FontSize="13"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                               Visibility="{Binding Library.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                 </Grid>
             </TabItem>
         </TabControl>

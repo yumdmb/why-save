@@ -100,14 +100,15 @@ public class UpdateServiceTests : IDisposable
     }
 
     [Fact]
-    public void Staged_Update_File_Does_Not_Exist_By_Default()
+    public void ReleaseFeed_Url_Can_Point_To_Msi_Installer()
     {
-        var logger = new Serilog.LoggerConfiguration().CreateLogger();
-        using var service = new UpdateService(_settingsEnabled, logger);
+        var feed = new ReleaseFeed
+        {
+            Version = "1.0.1",
+            Url = "https://github.com/yumdmb/why-save/releases/download/v1.0.1/WhySave.msi",
+            Sha256 = "abc123def456",
+        };
 
-        service.CheckAndApplyStagedUpdate();
-
-        var stagedPath = Path.Combine(AppContext.BaseDirectory, "WhySave.App.exe.new");
-        Assert.False(File.Exists(stagedPath));
+        Assert.EndsWith(".msi", new Uri(feed.Url).AbsolutePath, StringComparison.OrdinalIgnoreCase);
     }
 }

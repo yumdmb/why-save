@@ -2,6 +2,9 @@
 # Prerequisites:
 #   - .NET 8 SDK
 #   - WiX v4 (dotnet tool install --global wix --version 4.*)
+#   - WiX extensions:
+#       wix extension add -g WixToolset.UI.wixext/<wix-version>
+#       wix extension add -g WixToolset.Util.wixext/<wix-version>
 #
 # Usage: powershell -ExecutionPolicy Bypass -File build-msi.ps1
 
@@ -24,7 +27,6 @@ dotnet publish $appProject `
     -r $RuntimeIdentifier `
     --self-contained true `
     -p:PublishSingleFile=true `
-    -p:PublishReadyToRun=true `
     -p:IncludeNativeLibrariesForSelfExtract=true `
     -p:EnableCompressionInSingleFile=true `
     -o $publishDir
@@ -41,7 +43,7 @@ if (-not $wixExe) {
     exit 1
 }
 
-wix build $wxsFile -o $msiOutput -d "BuildDir=$publishDir" -ext WixToolset.UI.wixext
+wix build $wxsFile -o $msiOutput -d "BuildDir=$publishDir" -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "MSI build failed with exit code $LASTEXITCODE"

@@ -37,7 +37,7 @@ public sealed class AddContextDialogService : IAddContextDialogService
                     recentProjects);
 
                 var window = new AddContextWindow(viewModel);
-                window.Closed += (_, _) => RefreshInboxIfVisible();
+                window.Closed += async (_, _) => await RefreshMainWindowAfterSaveAsync(viewModel.Saved);
                 window.Show();
                 window.Activate();
             }
@@ -54,12 +54,16 @@ public sealed class AddContextDialogService : IAddContextDialogService
         }));
     }
 
-    private static void RefreshInboxIfVisible()
+    private static async Task RefreshMainWindowAfterSaveAsync(bool saved)
     {
+        if (!saved)
+            return;
+
         var mainWindow = Application.Current?.Windows.OfType<MainWindow>().FirstOrDefault();
         if (mainWindow?.DataContext is MainViewModel vm)
         {
             vm.Inbox.Refresh();
+            await vm.Find.RefreshAsync();
         }
     }
 }

@@ -38,7 +38,8 @@ public sealed class UpdateService : IDisposable
     private readonly HttpClient _httpClient;
     private Timer? _dailyTimer;
     private readonly string _exePath;
-    private readonly string _installDir;
+    private readonly string _updatesDir;
+    private readonly string _stagedInstallerPath;
 
     public UpdateService(SettingsService settingsService, ILogger logger)
     {
@@ -48,7 +49,8 @@ public sealed class UpdateService : IDisposable
         _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("WhySave/1.0 (self-update)");
 
         _exePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "WhySave.App.exe");
-        _installDir = Path.GetDirectoryName(_exePath) ?? AppContext.BaseDirectory;
+        _updatesDir = Path.Combine(AppPaths.AppDataDir, "updates");
+        _stagedInstallerPath = Path.Combine(_updatesDir, "WhySave-update.msi");
     }
 
     public void Start()
@@ -126,10 +128,10 @@ public sealed class UpdateService : IDisposable
     {
         try
         {
-            var tempPath = Path.Combine(_installDir, "WhySave.App.exe.new");
-            var downloadedPath = Path.Combine(Path.GetTempPath(), $"WhySave-update-{feed.Version}.exe");
+            Directory.CreateDirectory(_updatesDir);
+            var downloadedPath = Path.Combine(Path.GetTempPath(), $"WhySave-update-{feed.Version}.msi");
 
-            _logger.Information("Downloading update from feed URL");
+            _logger.Information("Downloading MSI update from feed URL");
 
             using (var response = await _httpClient.GetAsync(feed.Url, ct))
             {
@@ -146,10 +148,10 @@ public sealed class UpdateService : IDisposable
                 return false;
             }
 
-            File.Copy(downloadedPath, tempPath, overwrite: true);
+            File.Copy(downloadedPath, _stagedInstallerPath, overwrite: true);
             try { File.Delete(downloadedPath); } catch { }
 
-            _logger.Information("Update staged at {TempPath}; will apply on next restart", tempPath);
+            _logger.Information("MSI update staged at {InstallerPath}; will install after app exit", _stagedInstallerPath);
             return true;
         }
         catch (Exception ex)
@@ -161,12 +163,10 @@ public sealed class UpdateService : IDisposable
 
     public void ApplyStagedUpdateOnRestart()
     {
-        var stagedPath = Path.Combine(_installDir, "WhySave.App.exe.new");
-        if (!File.Exists(stagedPath))
+        if (!File.Exists(_stagedInstallerPath))
             return;
 
         var batchPath = Path.Combine(Path.GetTempPath(), "whysave-updater.bat");
-        var oldPath = _exePath + ".old";
 
         var batch = $"""
             @echo off
@@ -174,10 +174,12 @@ public sealed class UpdateService : IDisposable
             timeout /t 1 /nobreak >nul
             tasklist /fi "PID eq {Environment.ProcessId}" 2>nul | find "{Environment.ProcessId}" >nul
             if not errorlevel 1 goto wait
-            move /y "{_exePath}" "{oldPath}" >nul 2>&1
-            move /y "{stagedPath}" "{_exePath}" >nul 2>&1
-            start "" "{_exePath}"
-            del "{oldPath}" >nul 2>&1
+            start /wait "" msiexec.exe /i "{_stagedInstallerPath}" /qn /norestart
+            set MSI_EXIT=%ERRORLEVEL%
+            if "%MSI_EXIT%"=="0" del "{_stagedInstallerPath}" >nul 2>&1
+            if "%MSI_EXIT%"=="3010" del "{_stagedInstallerPath}" >nul 2>&1
+            if "%MSI_EXIT%"=="0" start "" "{_exePath}"
+            if "%MSI_EXIT%"=="3010" start "" "{_exePath}"
             del "%~f0" >nul 2>&1
             """;
 
@@ -185,44 +187,14 @@ public sealed class UpdateService : IDisposable
 
         var psi = new ProcessStartInfo
         {
-            FileName = batchPath,
+            FileName = "cmd.exe",
+            Arguments = $"/c \"{batchPath}\"",
             UseShellExecute = false,
             CreateNoWindow = true,
         };
 
         Process.Start(psi);
-        _logger.Information("Updater stub launched; applying staged update on exit");
-    }
-
-    public void CheckAndApplyStagedUpdate()
-    {
-        var stagedPath = Path.Combine(_installDir, "WhySave.App.exe.new");
-        if (File.Exists(stagedPath))
-        {
-            try
-            {
-                var oldPath = _exePath + ".old";
-                if (File.Exists(oldPath))
-                {
-                    File.Delete(oldPath);
-                }
-
-                File.Move(_exePath, oldPath);
-                File.Move(stagedPath, _exePath);
-
-                _logger.Information("Applied staged update from previous session");
-            }
-            catch (Exception ex)
-            {
-                _logger.Warning(ex, "Failed to apply staged update on startup");
-            }
-        }
-
-        var leftoverOld = _exePath + ".old";
-        if (File.Exists(leftoverOld))
-        {
-            try { File.Delete(leftoverOld); } catch { }
-        }
+        _logger.Information("Updater stub launched; installing staged MSI after app exit");
     }
 
     private static Version GetCurrentVersion()

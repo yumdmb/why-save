@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title>Why Save icon</title>
+  <desc>Minimal Why Save product icon with a white Y mark on a deep teal rounded square.</desc>
+  <rect x="24" y="24" width="208" height="208" rx="48" fill="#174E4B"/>
+  <path d="M80 78 128 132 176 78" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M128 132v54" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round"/>
+  <path d="M178 66h24a8 8 0 0 1 8 8v60l-20-14-20 14V74a8 8 0 0 1 8-8Z" fill="#7DDDC6"/>
+</svg>
