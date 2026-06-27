@@ -22,8 +22,15 @@
 
     <Property Id="ApplicationFolderName" Value="WhySave" />
     <Property Id="WixAppFolder" Value="WixPerUserFolder" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Run Why Save" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
+    <Property Id="WixShellExecTarget" Value="[#WhySaveExe]" />
 
     <Icon Id="AppIcon.ico" SourceFile="$(var.BuildDir)\WhySave.App.exe" />
+    <CustomAction Id="LaunchApplication"
+                  BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"
+                  DllEntry="WixShellExec"
+                  Impersonate="yes" />
 
     <Feature Id="MainFeature" Title="Why Save" Level="1">
       <ComponentGroupRef Id="AppFiles" />
@@ -33,6 +40,13 @@
 
     <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
     <WixVariable Id="WixUILicenseRtf" Value="$(sys.SOURCEFILEDIR)License.rtf" />
+    <UI>
+      <Publish Dialog="ExitDialog"
+               Control="Finish"
+               Event="DoAction"
+               Value="LaunchApplication"
+               Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed" />
+    </UI>
   </Package>
 
   <Fragment>
