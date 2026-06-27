@@ -24,7 +24,6 @@ dotnet publish $appProject `
     -r $RuntimeIdentifier `
     --self-contained true `
     -p:PublishSingleFile=true `
-    -p:PublishReadyToRun=true `
     -p:IncludeNativeLibrariesForSelfExtract=true `
     -p:EnableCompressionInSingleFile=true `
     -o $publishDir

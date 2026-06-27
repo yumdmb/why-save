@@ -108,5 +108,6 @@ settings.json
 openspec/
 skills-lock.json
 docs/
+.codex/
 
 

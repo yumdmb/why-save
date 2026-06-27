@@ -18,8 +18,8 @@ Run these steps on a clean Windows 10/11 user account with no prior Why Save ins
 - [ ] Drop a PDF into Downloads → toast appears after ~1.5s quiet period
 - [ ] Click "Add Context" on toast → Add Context form opens
 - [ ] Fill reason + project → Save → row becomes `contexted`
-- [ ] Inbox tab shows pending files; Library shows legacy + contexted
-- [ ] Search tab: keyword finds file; `reason:term` finds by reason; empty state works
+- [ ] Inbox tab shows pending files; Find shows imported + contexted files by default
+- [ ] Find tab: keyword finds files by filename, project, URL, reason, or notes; empty state works
 - [ ] Settings window: all sections (folders, junk rules, hotkey, encryption, updates, logging)
 
 ### Auto-Update (if enabled)
@@ -34,27 +34,24 @@ Run these steps on a clean Windows 10/11 user account with no prior Why Save ins
 
 ### Tray Menu
 - [ ] Tray icon visible with "Y" icon
-- [ ] Right-click shows: Search, Memory Inbox (with count), Library, Settings, Pause watching, Exit
+- [ ] Right-click shows: Find, Memory Inbox (with count), Settings, Pause watching, Exit
 - [ ] "🔴 N files need context" badge when N>0, no badge when N=0
-- [ ] Left-click opens Search tab
+- [ ] Left-click opens Find tab
 
-### Search Tab
-- [ ] Search box + Search button
+### Find Tab
+- [ ] Find box + Find button
+- [ ] Empty query lists recent imported + contexted files
 - [ ] Results show filename, reason snippet, project, saved date, status badge
+- [ ] Status badges correct (Imported=blue, Has context=green)
 - [ ] "Open" button launches file with OS default handler
 - [ ] "Edit context" button opens Add Context form
 - [ ] No results → empty state message
 
 ### Inbox Tab
 - [ ] Lists pending files with "Add why" button
-- [ ] Bulk-select → "Dismiss to legacy" works
+- [ ] Bulk-select → "Dismiss to imported" works
 - [ ] Bulk-select → "Delete record" works
 - [ ] Empty inbox → empty state message
-
-### Library Tab
-- [ ] Lists legacy + contexted files
-- [ ] Browse filter works
-- [ ] Status badges correct (Legacy=blue, Contexted=green)
 
 ### Settings Window
 - [ ] Watched folders: add/remove, default Downloads shown

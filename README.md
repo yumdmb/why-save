@@ -12,14 +12,13 @@ Alternatively, download the self-contained `WhySave.App.exe`, place it anywhere,
 
 ## Usage
 
-- **Tray icon**: Left-click to open Search. Right-click for the full menu (Search, Memory Inbox, Library, Settings, Pause watching, Exit).
-- **Global hotkey**: `Ctrl+Win+Y` opens Search from anywhere. Reconfigure in Settings.
+- **Tray icon**: Left-click to open Find. Right-click for the full menu (Find, Memory Inbox, Settings, Pause watching, Exit).
+- **Global hotkey**: `Ctrl+Win+Y` opens Find from anywhere. Reconfigure in Settings.
 - **New file appears**: A native toast asks "Why did you save this?" with `Add Context` and `Later` actions.
   - `Add Context` opens a form: Reason, Project, Source URL, Notes, Saved date.
   - `Later` or dismiss: the file stays in the **Memory Inbox** for later processing.
-- **Memory Inbox**: Lists pending files (`🔴 N files need context` in the tray menu). Bulk-select to dismiss to legacy or delete records.
-- **Library**: Browse all legacy and contexted files by date and filename.
-- **Search**: FTS5 keyword search over filenames, projects, and URLs. Use `reason:term` to search the encrypted reason field (decrypted in memory, never indexed on disk).
+- **Memory Inbox**: Lists pending files (`🔴 N files need context` in the tray menu). Bulk-select to dismiss to imported or delete records.
+- **Find**: Browse recent imported/contexted files by default, or search filenames, projects, URLs, reasons, and notes from one place.
 
 ### Settings
 
