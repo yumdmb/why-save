@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="520" viewBox="0 0 1600 520" role="img" aria-labelledby="title desc">
+  <title id="title">Why Save README banner</title>
+  <desc id="desc">Why Save logo with the text Capture the why behind every downloaded file.</desc>
+  <defs>
+    <filter id="logoShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="20" stdDeviation="18" flood-color="#174E4B" flood-opacity="0.14"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="520" fill="#F8FFFC"/>
+  <rect x="0" y="0" width="1600" height="8" fill="#174E4B"/>
+
+  <g transform="translate(168 132)" filter="url(#logoShadow)">
+    <rect x="0" y="0" width="256" height="256" rx="58" fill="#174E4B"/>
+    <path d="M56 54 128 135 200 54" fill="none" stroke="#FFFFFF" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M128 135v81" fill="none" stroke="#FFFFFF" stroke-width="42" stroke-linecap="round"/>
+    <path d="M203 39h30a10 10 0 0 1 10 10v76l-25-18-25 18V49a10 10 0 0 1 10-10Z" fill="#7DDDC6"/>
+  </g>
+
+  <g transform="translate(500 162)" font-family="Segoe UI, Inter, Arial, sans-serif">
+    <text x="0" y="72" fill="#174E4B" font-size="86" font-weight="800">Why Save</text>
+    <text x="4" y="142" fill="#305C58" font-size="40" font-weight="600">Capture the why behind every downloaded file.</text>
+    <line x1="6" y1="188" x2="712" y2="188" stroke="#D9E9E5" stroke-width="2"/>
+    <text x="6" y="236" fill="#5F7470" font-size="24" font-weight="500">Local-first file memory for Windows.</text>
+  </g>
+</svg>
